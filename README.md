@@ -5,13 +5,7 @@ output:
     theme: flatly
 ---
 
-```{r knitr_settings, include=FALSE}
-library(knitr)
-opts_knit$set(progress=TRUE, verbose=TRUE)
-opts_chunk$set(fig.width=1080/96,
-               fig.height=1080/96,
-               dpi=96)
-```
+
 
 Bread for the World Hackathon
 =============================
@@ -19,7 +13,8 @@ Bread for the World Hackathon
 Data preparation
 ----------------
 
-```{r load_data}
+
+```r
 library(dplyr)
 options(StringsAsFactors=FALSE)
 
