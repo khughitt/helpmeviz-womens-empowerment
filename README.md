@@ -26,13 +26,18 @@ stunting = stunting %>% select(Country.Name, Country.Code, Indicator.Code, X2000
                                X2002, X2003, X2004, X2005, X2006, X2007, X2008, X2009,
                                X2010, X2011, X2012, X2013)
 
-# Count number of non-zero values
+# Mean stunting for last 15 years
 values = stunting  %>% select(-Country.Name, -Country.Code, -Indicator.Code)
+stunting$Most.Recent.Stunting = as.numeric(apply(values, 1, function(x) {
+                                                 tail(x[!is.na(x)], 1) }))
+
+# Most recent data point for each Country for which data is available during
+# this time period
 stunting$Mean.Stunting = apply(values, 1, function(x) { mean(x, na.rm=T) })
 
 # Drop the individual year columns
 stunting = stunting %>% select(Country.Name, Country.Code, Indicator.Code,
-                               Mean.Stunting)
+                               Mean.Stunting, Most.Recent.Stunting)
 
 # Drop Countries with no recent data
 stunting = stunting %>% filter(!is.nan(Mean.Stunting))

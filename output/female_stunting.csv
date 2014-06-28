@@ -1,129 +1,129 @@
-"Country.Name","Country.Code","Indicator.Code","Mean.Stunting"
-"Afghanistan","AFG","SH.STA.STNT.FE.ZS",58.5
-"Albania","ALB","SH.STA.STNT.FE.ZS",28.4333333333333
-"Algeria","DZA","SH.STA.STNT.FE.ZS",19.5666666666667
-"Angola","AGO","SH.STA.STNT.FE.ZS",26.1
-"Argentina","ARG","SH.STA.STNT.FE.ZS",8.1
-"Armenia","ARM","SH.STA.STNT.FE.ZS",18.1
-"Azerbaijan","AZE","SH.STA.STNT.FE.ZS",24.35
-"Bangladesh","BGD","SH.STA.STNT.FE.ZS",48.3222222222222
-"Belarus","BLR","SH.STA.STNT.FE.ZS",4.2
-"Belize","BLZ","SH.STA.STNT.FE.ZS",20.25
-"Benin","BEN","SH.STA.STNT.FE.ZS",39.5
-"Bhutan","BTN","SH.STA.STNT.FE.ZS",32.75
-"Bolivia","BOL","SH.STA.STNT.FE.ZS",28.8
-"Bosnia and Herzegovina","BIH","SH.STA.STNT.FE.ZS",10.2
-"Botswana","BWA","SH.STA.STNT.FE.ZS",27.65
-"Brazil","BRA","SH.STA.STNT.FE.ZS",5.8
-"Bulgaria","BGR","SH.STA.STNT.FE.ZS",12
-"Burkina Faso","BFA","SH.STA.STNT.FE.ZS",36.275
-"Burundi","BDI","SH.STA.STNT.FE.ZS",56.95
-"Cambodia","KHM","SH.STA.STNT.FE.ZS",41.85
-"Cameroon","CMR","SH.STA.STNT.FE.ZS",32.5666666666667
-"Central African Republic","CAF","SH.STA.STNT.FE.ZS",42.65
-"Chad","TCD","SH.STA.STNT.FE.ZS",40.8
-"Chile","CHL","SH.STA.STNT.FE.ZS",1.8
-"China","CHN","SH.STA.STNT.FE.ZS",13.6833333333333
-"Colombia","COL","SH.STA.STNT.FE.ZS",14.4666666666667
-"Comoros","COM","SH.STA.STNT.FE.ZS",47.3
-"Congo, Dem. Rep.","ZAR","SH.STA.STNT.FE.ZS",41.4333333333333
-"Congo, Rep.","COG","SH.STA.STNT.FE.ZS",29
-"Costa Rica","CRI","SH.STA.STNT.FE.ZS",6.6
-"Cote d'Ivoire","CIV","SH.STA.STNT.FE.ZS",37.2
-"Czech Republic","CZE","SH.STA.STNT.FE.ZS",2.1
-"Djibouti","DJI","SH.STA.STNT.FE.ZS",29.6333333333333
-"Dominican Republic","DOM","SH.STA.STNT.FE.ZS",8.5
-"Ecuador","ECU","SH.STA.STNT.FE.ZS",27.3
-"Egypt, Arab Rep.","EGY","SH.STA.STNT.FE.ZS",22.8
-"El Salvador","SLV","SH.STA.STNT.FE.ZS",21.65
-"Equatorial Guinea","GNQ","SH.STA.STNT.FE.ZS",36.5
-"Eritrea","ERI","SH.STA.STNT.FE.ZS",41.8
-"Ethiopia","ETH","SH.STA.STNT.FE.ZS",49.2666666666667
-"Fiji","FJI","SH.STA.STNT.FE.ZS",6.9
-"Gabon","GAB","SH.STA.STNT.FE.ZS",19.35
-"Gambia, The","GMB","SH.STA.STNT.FE.ZS",24.35
-"Georgia","GEO","SH.STA.STNT.FE.ZS",11.85
-"Germany","DEU","SH.STA.STNT.FE.ZS",1.2
-"Ghana","GHA","SH.STA.STNT.FE.ZS",28.5333333333333
-"Guatemala","GTM","SH.STA.STNT.FE.ZS",50.7
-"Guinea","GIN","SH.STA.STNT.FE.ZS",36.3333333333333
-"Guinea-Bissau","GNB","SH.STA.STNT.FE.ZS",35.8666666666667
-"Guyana","GUY","SH.STA.STNT.FE.ZS",16.2
-"Haiti","HTI","SH.STA.STNT.FE.ZS",26.1
-"Honduras","HND","SH.STA.STNT.FE.ZS",30.45
-"India","IND","SH.STA.STNT.FE.ZS",48
-"Indonesia","IDN","SH.STA.STNT.FE.ZS",36.96
-"Iraq","IRQ","SH.STA.STNT.FE.ZS",26.9
-"Jamaica","JAM","SH.STA.STNT.FE.ZS",4.1375
-"Jordan","JOR","SH.STA.STNT.FE.ZS",10.4
-"Kazakhstan","KAZ","SH.STA.STNT.FE.ZS",14.95
-"Kenya","KEN","SH.STA.STNT.FE.ZS",34.2
-"Korea, Dem. Rep.","PRK","SH.STA.STNT.FE.ZS",37.15
-"Korea, Rep.","KOR","SH.STA.STNT.FE.ZS",2.5
-"Kuwait","KWT","SH.STA.STNT.FE.ZS",3.88333333333333
-"Kyrgyz Republic","KGZ","SH.STA.STNT.FE.ZS",17.5
-"Lao PDR","LAO","SH.STA.STNT.FE.ZS",46.75
-"Lebanon","LBN","SH.STA.STNT.FE.ZS",17
-"Lesotho","LSO","SH.STA.STNT.FE.ZS",42.8666666666667
-"Liberia","LBR","SH.STA.STNT.FE.ZS",39.1
-"Libya","LBY","SH.STA.STNT.FE.ZS",19.6
-"Macedonia, FYR","MKD","SH.STA.STNT.FE.ZS",9.6
-"Madagascar","MDG","SH.STA.STNT.FE.ZS",49.1
-"Malawi","MWI","SH.STA.STNT.FE.ZS",48.68
-"Malaysia","MYS","SH.STA.STNT.FE.ZS",17.2
-"Maldives","MDV","SH.STA.STNT.FE.ZS",25
-"Mali","MLI","SH.STA.STNT.FE.ZS",38.85
-"Mauritania","MRT","SH.STA.STNT.FE.ZS",26.4
-"Mexico","MEX","SH.STA.STNT.FE.ZS",13.55
-"Moldova","MDA","SH.STA.STNT.FE.ZS",11.5
-"Mongolia","MNG","SH.STA.STNT.FE.ZS",24.3333333333333
-"Montenegro","MNE","SH.STA.STNT.FE.ZS",7.5
-"Morocco","MAR","SH.STA.STNT.FE.ZS",17.95
-"Mozambique","MOZ","SH.STA.STNT.FE.ZS",42.1
-"Myanmar","MMR","SH.STA.STNT.FE.ZS",37.5333333333333
-"Namibia","NAM","SH.STA.STNT.FE.ZS",27.85
-"Nepal","NPL","SH.STA.STNT.FE.ZS",48.7333333333333
-"Nicaragua","NIC","SH.STA.STNT.FE.ZS",20.6333333333333
-"Niger","NER","SH.STA.STNT.FE.ZS",52.25
-"Nigeria","NGA","SH.STA.STNT.FE.ZS",38.75
-"Oman","OMN","SH.STA.STNT.FE.ZS",8.5
-"Pakistan","PAK","SH.STA.STNT.FE.ZS",41.4
-"Panama","PAN","SH.STA.STNT.FE.ZS",18.9
-"Papua New Guinea","PNG","SH.STA.STNT.FE.ZS",39.6
-"Peru","PER","SH.STA.STNT.FE.ZS",27.4333333333333
-"Philippines","PHL","SH.STA.STNT.FE.ZS",31.7333333333333
-"Romania","ROM","SH.STA.STNT.FE.ZS",11.2
-"Rwanda","RWA","SH.STA.STNT.FE.ZS",45.7666666666667
-"Sao Tome and Principe","STP","SH.STA.STNT.FE.ZS",31.85
-"Saudi Arabia","SAU","SH.STA.STNT.FE.ZS",7.8
-"Senegal","SEN","SH.STA.STNT.FE.ZS",22.4
-"Serbia","SRB","SH.STA.STNT.FE.ZS",7.6
-"Sierra Leone","SLE","SH.STA.STNT.FE.ZS",39.425
-"Singapore","SGP","SH.STA.STNT.FE.ZS",3.9
-"Somalia","SOM","SH.STA.STNT.FE.ZS",41.3
-"South Africa","ZAF","SH.STA.STNT.FE.ZS",30.5
-"South Sudan","SSD","SH.STA.STNT.FE.ZS",32.9
-"Sri Lanka","LKA","SH.STA.STNT.FE.ZS",18.3666666666667
-"Sudan","SDN","SH.STA.STNT.FE.ZS",41.7
-"Suriname","SUR","SH.STA.STNT.FE.ZS",9.76666666666667
-"Swaziland","SWZ","SH.STA.STNT.FE.ZS",29.4333333333333
-"Syrian Arab Republic","SYR","SH.STA.STNT.FE.ZS",27.6
-"Tajikistan","TJK","SH.STA.STNT.FE.ZS",33.95
-"Tanzania","TZA","SH.STA.STNT.FE.ZS",40.5
-"Thailand","THA","SH.STA.STNT.FE.ZS",15
-"Timor-Leste","TMP","SH.STA.STNT.FE.ZS",53.3333333333333
-"Togo","TGO","SH.STA.STNT.FE.ZS",25.9666666666667
-"Trinidad and Tobago","TTO","SH.STA.STNT.FE.ZS",3.5
-"Tunisia","TUN","SH.STA.STNT.FE.ZS",8
-"Turkey","TUR","SH.STA.STNT.FE.ZS",16.6
-"Uganda","UGA","SH.STA.STNT.FE.ZS",36.1
-"Ukraine","UKR","SH.STA.STNT.FE.ZS",22.8
-"United States","USA","SH.STA.STNT.FE.ZS",2.8
-"Uruguay","URY","SH.STA.STNT.FE.ZS",12.12
-"Uzbekistan","UZB","SH.STA.STNT.FE.ZS",22
-"Vanuatu","VUT","SH.STA.STNT.FE.ZS",20
-"Vietnam","VNM","SH.STA.STNT.FE.ZS",32.1111111111111
-"West Bank and Gaza","WBG","SH.STA.STNT.FE.ZS",11.2
-"Yemen, Rep.","YEM","SH.STA.STNT.FE.ZS",56.9
-"Zambia","ZMB","SH.STA.STNT.FE.ZS",46.9
-"Zimbabwe","ZWE","SH.STA.STNT.FE.ZS",30.9
+"Country.Name","Country.Code","Indicator.Code","Mean.Stunting","Most.Recent.Stunting"
+"Afghanistan","AFG","SH.STA.STNT.FE.ZS",58.5,58.5
+"Albania","ALB","SH.STA.STNT.FE.ZS",28.4333333333333,23.4
+"Algeria","DZA","SH.STA.STNT.FE.ZS",19.5666666666667,15
+"Angola","AGO","SH.STA.STNT.FE.ZS",26.1,26.1
+"Argentina","ARG","SH.STA.STNT.FE.ZS",8.1,8.1
+"Armenia","ARM","SH.STA.STNT.FE.ZS",18.1,19.9
+"Azerbaijan","AZE","SH.STA.STNT.FE.ZS",24.35,24.9
+"Bangladesh","BGD","SH.STA.STNT.FE.ZS",48.3222222222222,42.1
+"Belarus","BLR","SH.STA.STNT.FE.ZS",4.2,4.2
+"Belize","BLZ","SH.STA.STNT.FE.ZS",20.25,20
+"Benin","BEN","SH.STA.STNT.FE.ZS",39.5,41.6
+"Bhutan","BTN","SH.STA.STNT.FE.ZS",32.75,33.7
+"Bolivia","BOL","SH.STA.STNT.FE.ZS",28.8,26.2
+"Bosnia and Herzegovina","BIH","SH.STA.STNT.FE.ZS",10.2,8.9
+"Botswana","BWA","SH.STA.STNT.FE.ZS",27.65,28.7
+"Brazil","BRA","SH.STA.STNT.FE.ZS",5.8,5.8
+"Bulgaria","BGR","SH.STA.STNT.FE.ZS",12,12
+"Burkina Faso","BFA","SH.STA.STNT.FE.ZS",36.275,32.8
+"Burundi","BDI","SH.STA.STNT.FE.ZS",56.95,53.1
+"Cambodia","KHM","SH.STA.STNT.FE.ZS",41.85,39.4
+"Cameroon","CMR","SH.STA.STNT.FE.ZS",32.5666666666667,30.1
+"Central African Republic","CAF","SH.STA.STNT.FE.ZS",42.65,42.5
+"Chad","TCD","SH.STA.STNT.FE.ZS",40.8,44.3
+"Chile","CHL","SH.STA.STNT.FE.ZS",1.8,1.8
+"China","CHN","SH.STA.STNT.FE.ZS",13.6833333333333,8.9
+"Colombia","COL","SH.STA.STNT.FE.ZS",14.4666666666667,11.6
+"Comoros","COM","SH.STA.STNT.FE.ZS",47.3,47.3
+"Congo, Dem. Rep.","ZAR","SH.STA.STNT.FE.ZS",41.4333333333333,39.7
+"Congo, Rep.","COG","SH.STA.STNT.FE.ZS",29,29
+"Costa Rica","CRI","SH.STA.STNT.FE.ZS",6.6,6.6
+"Cote d'Ivoire","CIV","SH.STA.STNT.FE.ZS",37.2,37.8
+"Czech Republic","CZE","SH.STA.STNT.FE.ZS",2.1,2.1
+"Djibouti","DJI","SH.STA.STNT.FE.ZS",29.6333333333333,33.3
+"Dominican Republic","DOM","SH.STA.STNT.FE.ZS",8.5,8.9
+"Ecuador","ECU","SH.STA.STNT.FE.ZS",27.3,27.3
+"Egypt, Arab Rep.","EGY","SH.STA.STNT.FE.ZS",22.8,28.4
+"El Salvador","SLV","SH.STA.STNT.FE.ZS",21.65,19.8
+"Equatorial Guinea","GNQ","SH.STA.STNT.FE.ZS",36.5,33.8
+"Eritrea","ERI","SH.STA.STNT.FE.ZS",41.8,41.8
+"Ethiopia","ETH","SH.STA.STNT.FE.ZS",49.2666666666667,42.2
+"Fiji","FJI","SH.STA.STNT.FE.ZS",6.9,6.9
+"Gabon","GAB","SH.STA.STNT.FE.ZS",19.35,15.1
+"Gambia, The","GMB","SH.STA.STNT.FE.ZS",24.35,26.6
+"Georgia","GEO","SH.STA.STNT.FE.ZS",11.85,10.2
+"Germany","DEU","SH.STA.STNT.FE.ZS",1.2,1.2
+"Ghana","GHA","SH.STA.STNT.FE.ZS",28.5333333333333,26.7
+"Guatemala","GTM","SH.STA.STNT.FE.ZS",50.7,47.3
+"Guinea","GIN","SH.STA.STNT.FE.ZS",36.3333333333333,33.8
+"Guinea-Bissau","GNB","SH.STA.STNT.FE.ZS",35.8666666666667,26.1
+"Guyana","GUY","SH.STA.STNT.FE.ZS",16.2,18.6
+"Haiti","HTI","SH.STA.STNT.FE.ZS",26.1,26.5
+"Honduras","HND","SH.STA.STNT.FE.ZS",30.45,28.3
+"India","IND","SH.STA.STNT.FE.ZS",48,48
+"Indonesia","IDN","SH.STA.STNT.FE.ZS",36.96,37.6
+"Iraq","IRQ","SH.STA.STNT.FE.ZS",26.9,26.2
+"Jamaica","JAM","SH.STA.STNT.FE.ZS",4.1375,3.7
+"Jordan","JOR","SH.STA.STNT.FE.ZS",10.4,8.7
+"Kazakhstan","KAZ","SH.STA.STNT.FE.ZS",14.95,13
+"Kenya","KEN","SH.STA.STNT.FE.ZS",34.2,33.1
+"Korea, Dem. Rep.","PRK","SH.STA.STNT.FE.ZS",37.15,32.4
+"Korea, Rep.","KOR","SH.STA.STNT.FE.ZS",2.5,2.5
+"Kuwait","KWT","SH.STA.STNT.FE.ZS",3.88333333333333,4.4
+"Kyrgyz Republic","KGZ","SH.STA.STNT.FE.ZS",17.5,17.5
+"Lao PDR","LAO","SH.STA.STNT.FE.ZS",46.75,46.8
+"Lebanon","LBN","SH.STA.STNT.FE.ZS",17,17
+"Lesotho","LSO","SH.STA.STNT.FE.ZS",42.8666666666667,35
+"Liberia","LBR","SH.STA.STNT.FE.ZS",39.1,36.7
+"Libya","LBY","SH.STA.STNT.FE.ZS",19.6,19.6
+"Macedonia, FYR","MKD","SH.STA.STNT.FE.ZS",9.6,10
+"Madagascar","MDG","SH.STA.STNT.FE.ZS",49.1,46.7
+"Malawi","MWI","SH.STA.STNT.FE.ZS",48.68,44.1
+"Malaysia","MYS","SH.STA.STNT.FE.ZS",17.2,17.2
+"Maldives","MDV","SH.STA.STNT.FE.ZS",25,19
+"Mali","MLI","SH.STA.STNT.FE.ZS",38.85,36.2
+"Mauritania","MRT","SH.STA.STNT.FE.ZS",26.4,19.5
+"Mexico","MEX","SH.STA.STNT.FE.ZS",13.55,12.1
+"Moldova","MDA","SH.STA.STNT.FE.ZS",11.5,11.5
+"Mongolia","MNG","SH.STA.STNT.FE.ZS",24.3333333333333,25.6
+"Montenegro","MNE","SH.STA.STNT.FE.ZS",7.5,7.5
+"Morocco","MAR","SH.STA.STNT.FE.ZS",17.95,14
+"Mozambique","MOZ","SH.STA.STNT.FE.ZS",42.1,41
+"Myanmar","MMR","SH.STA.STNT.FE.ZS",37.5333333333333,33.4
+"Namibia","NAM","SH.STA.STNT.FE.ZS",27.85,27.1
+"Nepal","NPL","SH.STA.STNT.FE.ZS",48.7333333333333,39.5
+"Nicaragua","NIC","SH.STA.STNT.FE.ZS",20.6333333333333,21.9
+"Niger","NER","SH.STA.STNT.FE.ZS",52.25,52.6
+"Nigeria","NGA","SH.STA.STNT.FE.ZS",38.75,35
+"Oman","OMN","SH.STA.STNT.FE.ZS",8.5,8.5
+"Pakistan","PAK","SH.STA.STNT.FE.ZS",41.4,42
+"Panama","PAN","SH.STA.STNT.FE.ZS",18.9,18.9
+"Papua New Guinea","PNG","SH.STA.STNT.FE.ZS",39.6,39.6
+"Peru","PER","SH.STA.STNT.FE.ZS",27.4333333333333,25.9
+"Philippines","PHL","SH.STA.STNT.FE.ZS",31.7333333333333,32.2
+"Romania","ROM","SH.STA.STNT.FE.ZS",11.2,11.1
+"Rwanda","RWA","SH.STA.STNT.FE.ZS",45.7666666666667,41.1
+"Sao Tome and Principe","STP","SH.STA.STNT.FE.ZS",31.85,32
+"Saudi Arabia","SAU","SH.STA.STNT.FE.ZS",7.8,7.8
+"Senegal","SEN","SH.STA.STNT.FE.ZS",22.4,13.5
+"Serbia","SRB","SH.STA.STNT.FE.ZS",7.6,7.2
+"Sierra Leone","SLE","SH.STA.STNT.FE.ZS",39.425,42.3
+"Singapore","SGP","SH.STA.STNT.FE.ZS",3.9,3.9
+"Somalia","SOM","SH.STA.STNT.FE.ZS",41.3,41.3
+"South Africa","ZAF","SH.STA.STNT.FE.ZS",30.5,30.5
+"South Sudan","SSD","SH.STA.STNT.FE.ZS",32.9,32.9
+"Sri Lanka","LKA","SH.STA.STNT.FE.ZS",18.3666666666667,18.7
+"Sudan","SDN","SH.STA.STNT.FE.ZS",41.7,36.6
+"Suriname","SUR","SH.STA.STNT.FE.ZS",9.76666666666667,7.7
+"Swaziland","SWZ","SH.STA.STNT.FE.ZS",29.4333333333333,28.1
+"Syrian Arab Republic","SYR","SH.STA.STNT.FE.ZS",27.6,26.5
+"Tajikistan","TJK","SH.STA.STNT.FE.ZS",33.95,37.2
+"Tanzania","TZA","SH.STA.STNT.FE.ZS",40.5,39.2
+"Thailand","THA","SH.STA.STNT.FE.ZS",15,15
+"Timor-Leste","TMP","SH.STA.STNT.FE.ZS",53.3333333333333,55.6
+"Togo","TGO","SH.STA.STNT.FE.ZS",25.9666666666667,27.8
+"Trinidad and Tobago","TTO","SH.STA.STNT.FE.ZS",3.5,3.5
+"Tunisia","TUN","SH.STA.STNT.FE.ZS",8,8
+"Turkey","TUR","SH.STA.STNT.FE.ZS",16.6,16.6
+"Uganda","UGA","SH.STA.STNT.FE.ZS",36.1,30.1
+"Ukraine","UKR","SH.STA.STNT.FE.ZS",22.8,22.8
+"United States","USA","SH.STA.STNT.FE.ZS",2.8,3.2
+"Uruguay","URY","SH.STA.STNT.FE.ZS",12.12,10.3
+"Uzbekistan","UZB","SH.STA.STNT.FE.ZS",22,19.7
+"Vanuatu","VUT","SH.STA.STNT.FE.ZS",20,20
+"Vietnam","VNM","SH.STA.STNT.FE.ZS",32.1111111111111,23.2
+"West Bank and Gaza","WBG","SH.STA.STNT.FE.ZS",11.2,11.2
+"Yemen, Rep.","YEM","SH.STA.STNT.FE.ZS",56.9,56.9
+"Zambia","ZMB","SH.STA.STNT.FE.ZS",46.9,42.9
+"Zimbabwe","ZWE","SH.STA.STNT.FE.ZS",30.9,28.7
