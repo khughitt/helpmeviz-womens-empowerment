@@ -125,8 +125,6 @@ The fields contained in the dataset `Stunting3.csv` include:
 
 * Country name
 * 2012 Seats in National Parliament (% female)
-* 2011 Labor Force (female)
-* 2011 Labor Force (male)
 * 2010 Maternal Mortality Ratio
 * Adolescent Fertility Rate
 * 2006-2010 Population with at least secondary education (Female)
@@ -135,18 +133,10 @@ The fields contained in the dataset `Stunting3.csv` include:
 * 2011 Labour force participation rate (Male)
 * 2010 Global Inequality Index (GII)
 * 2012 Global Inequality Index (GII)
-* IFPRI_Global_Hunger_Index_data.Indicator
-* IFPRI_Global_Hunger_Index_data.Year
-* IFPRI_Global_Hunger_Index_data.Data
-* IFPRI_Global_Hunger_Index_data_1.Indicator
-* IFPRI_Global_Hunger_Index_data_1.Year
-* IFPRI_Global_Hunger_Index_data_1.Data
-* IFPRI_Global_Hunger_Index_data_2.Indicator
-* IFPRI_Global_Hunger_Index_data_2.Year
-* IFPRI_Global_Hunger_Index_data_2.Data
-* IFPRI_Global_Hunger_Index_data_3.Indicator
-* IFPRI_Global_Hunger_Index_data_3.Year
-* IFPRI_Global_Hunger_Index_data_3.Data
+* 2013 Global Hunger Index (IFPRI)
+* 2011 Under-five Mortality rate (IFPRI)
+* 2010-2012 Prevalence of undernourishment in the population (IFPRI)
+* 2008-2012 Prevalence of underweight in children under five years (IFPRI)
 * Expr1024 (?)
 * Percent children with stunting (Female)
 * Percent children with stunting (Female)
@@ -154,26 +144,41 @@ The fields contained in the dataset `Stunting3.csv` include:
 
 ```r
 # load cleaned data
-df = tbl_df(read.csv('input/Stunting3.csv'))
+df = tbl_df(read.csv('input/Stunting4.csv'))
 
 # let's make names easy to type..
-colnames(df) = c("name", "seats_parlim_female", "labor_participation_female", 
-                 "labor_participation_male", "maternal_mortality_ratio",
-                 "fertility_rate", "secondary_education_female",
-                 "secondary_education_male", "labor_participation_female2",
-                 "labor_participation_male2", "GII_2010", "GII_2012",
-                 "ifpri_index_ind_0", "ifpri_index_year_0",  "ifpri_index_data_0", 
-                 "ifpri_index_ind_1", "ifpri_index_year_1",  "ifpri_index_data_1", 
-                 "ifpri_index_ind_2", "ifpri_index_year_2",  "ifpri_index_data_2", 
-                 "ifpri_index_ind_3", "ifpri_index_year_3",  "ifpri_index_data_3", 
+colnames(df) = c("country", "seats_parlim_female", "maternal_mortality_ratio",
+                 "adolescent_fertility_rate", "secondary_education_female",
+                 "secondary_education_male", "labor_participation_female",
+                 "labor_participation_male", "GII_2010", "GII_2012",
+                 "ifpri_hunger_index", "ifpri_under5_mortality",
+                 "ifpri_undernourishment", "ifpri_under5_underweight",
                  "Expr1024", "mean_stunting_female", "mean_stunting_male")
 
 # create a combined column
 df = df %>% mutate(mean_stunting_all = mean_stunting_female + mean_stunting_male)
+
+# create a version which includes only those countries that have all data
+# fields populated
+df_complete = df[complete.cases(df),]
 ```
 
 Visualization
 -------------
+
+### How do the predictors relate to one another? (In progress...)
+
+
+```r
+library(bpca)
+
+plot(bpca(df_complete[-1]),
+     var.factor=.5,
+     obj.names=TRUE,
+     obj.labels=df_complete$country)
+```
+
+![plot of chunk biplot](figure/biplot.png) 
 
 ### Mean Stunting Rate vs. Global Inequality Index
 
@@ -182,8 +187,9 @@ Visualization
 library(ggplot2)
 
 ggplot(df, aes(GII_2012, mean_stunting_all)) + geom_point() + geom_smooth() +
-    xlab('GII (2012)') +
-    ylab('Meaning Stunting Rate')
+    xlab('Global Inequality Index (2012)') +
+    ylab('Mean Stunting Rate') + 
+    ggtitle('Stunting rate vs. Gender Inequality')
 ```
 
 ```
@@ -196,4 +202,42 @@ ggplot(df, aes(GII_2012, mean_stunting_all)) + geom_point() + geom_smooth() +
 ```
 
 ![plot of chunk stunting_vs_gii](figure/stunting_vs_gii.png) 
+
+System Information
+------------------
+
+
+```r
+sessionInfo()
+```
+
+```
+## R version 3.1.0 (2014-04-10)
+## Platform: x86_64-unknown-linux-gnu (64-bit)
+## 
+## locale:
+##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+##  [1] bpca_1.2-2           rgl_0.93.996         scatterplot3d_0.3-35
+##  [4] ggplot2_1.0.0        dplyr_0.2            knitr_1.6.5         
+##  [7] rmarkdown_0.2.49     knitrBootstrap_1.0.0 vimcom.plus_1.0-0   
+## [10] setwidth_1.0-3       colorout_1.0-3      
+## 
+## loaded via a namespace (and not attached):
+##  [1] assertthat_0.1   colorspace_1.2-4 digest_0.6.4     evaluate_0.5.5  
+##  [5] formatR_0.10     grid_3.1.0       gtable_0.1.2     htmltools_0.2.4 
+##  [9] labeling_0.2     magrittr_1.0.1   markdown_0.7     MASS_7.3-31     
+## [13] mime_0.1.1       munsell_0.4.2    parallel_3.1.0   plyr_1.8.1      
+## [17] proto_0.3-10     Rcpp_0.11.1      reshape2_1.4     scales_0.2.4    
+## [21] stringr_0.6.2    tools_3.1.0      yaml_2.1.11
+```
 

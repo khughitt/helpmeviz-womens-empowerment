@@ -130,8 +130,6 @@ The fields contained in the dataset `Stunting3.csv` include:
 
 * Country name
 * 2012 Seats in National Parliament (% female)
-* 2011 Labor Force (female)
-* 2011 Labor Force (male)
 * 2010 Maternal Mortality Ratio
 * Adolescent Fertility Rate
 * 2006-2010 Population with at least secondary education (Female)
@@ -140,18 +138,10 @@ The fields contained in the dataset `Stunting3.csv` include:
 * 2011 Labour force participation rate (Male)
 * 2010 Global Inequality Index (GII)
 * 2012 Global Inequality Index (GII)
-* IFPRI_Global_Hunger_Index_data.Indicator
-* IFPRI_Global_Hunger_Index_data.Year
-* IFPRI_Global_Hunger_Index_data.Data
-* IFPRI_Global_Hunger_Index_data_1.Indicator
-* IFPRI_Global_Hunger_Index_data_1.Year
-* IFPRI_Global_Hunger_Index_data_1.Data
-* IFPRI_Global_Hunger_Index_data_2.Indicator
-* IFPRI_Global_Hunger_Index_data_2.Year
-* IFPRI_Global_Hunger_Index_data_2.Data
-* IFPRI_Global_Hunger_Index_data_3.Indicator
-* IFPRI_Global_Hunger_Index_data_3.Year
-* IFPRI_Global_Hunger_Index_data_3.Data
+* 2013 Global Hunger Index (IFPRI)
+* 2011 Under-five Mortality rate (IFPRI)
+* 2010-2012 Prevalence of undernourishment in the population (IFPRI)
+* 2008-2012 Prevalence of underweight in children under five years (IFPRI)
 * Expr1024 (?)
 * Percent children with stunting (Female)
 * Percent children with stunting (Female)
@@ -159,27 +149,39 @@ The fields contained in the dataset `Stunting3.csv` include:
 ```{r load_combined_dataset}
 
 # load cleaned data
-df = tbl_df(read.csv('input/Stunting3.csv'))
+df = tbl_df(read.csv('input/Stunting4.csv'))
 
 # let's make names easy to type..
-colnames(df) = c("name", "seats_parlim_female", "labor_participation_female", 
-                 "labor_participation_male", "maternal_mortality_ratio",
-                 "fertility_rate", "secondary_education_female",
-                 "secondary_education_male", "labor_participation_female2",
-                 "labor_participation_male2", "GII_2010", "GII_2012",
-                 "ifpri_index_ind_0", "ifpri_index_year_0",  "ifpri_index_data_0", 
-                 "ifpri_index_ind_1", "ifpri_index_year_1",  "ifpri_index_data_1", 
-                 "ifpri_index_ind_2", "ifpri_index_year_2",  "ifpri_index_data_2", 
-                 "ifpri_index_ind_3", "ifpri_index_year_3",  "ifpri_index_data_3", 
+colnames(df) = c("country", "seats_parlim_female", "maternal_mortality_ratio",
+                 "adolescent_fertility_rate", "secondary_education_female",
+                 "secondary_education_male", "labor_participation_female",
+                 "labor_participation_male", "GII_2010", "GII_2012",
+                 "ifpri_hunger_index", "ifpri_under5_mortality",
+                 "ifpri_undernourishment", "ifpri_under5_underweight",
                  "Expr1024", "mean_stunting_female", "mean_stunting_male")
 
 # create a combined column
 df = df %>% mutate(mean_stunting_all = mean_stunting_female + mean_stunting_male)
 
+# create a version which includes only those countries that have all data
+# fields populated
+df_complete = df[complete.cases(df),]
+
 ```
 
 Visualization
 -------------
+
+### How do the predictors relate to one another? (In progress...)
+
+```{r biplot}
+library(bpca)
+
+plot(bpca(df_complete[-1]),
+     var.factor=.5,
+     obj.names=TRUE,
+     obj.labels=df_complete$country)
+```
 
 ### Mean Stunting Rate vs. Global Inequality Index
 
@@ -187,7 +189,15 @@ Visualization
 library(ggplot2)
 
 ggplot(df, aes(GII_2012, mean_stunting_all)) + geom_point() + geom_smooth() +
-    xlab('GII (2012)') +
-    ylab('Meaning Stunting Rate')
+    xlab('Global Inequality Index (2012)') +
+    ylab('Mean Stunting Rate') + 
+    ggtitle('Stunting rate vs. Gender Inequality')
+```
+
+System Information
+------------------
+
+```{r sysinfo}
+sessionInfo()
 ```
 
