@@ -75,7 +75,7 @@ of those tables are included in the `input` folder.
 
 A table containing country/region mappings was downloaded from:
 
-* [https://github.com/okfn/iatitools/](https://github.com/okfn/iatitools/blob/master/mapping/ISO-DAC-Countries-Regions.csv)
+* [https://github.com/lukes/](https://github.com/lukes/ISO-3166-Countries-with-Regional-Codes/blob/master/all/all.csv)
 
 
 Data preparation
@@ -162,6 +162,9 @@ colnames(df) = c("country", "seats_parlim_female", "maternal_mortality_ratio",
                  "mean_stunting_female", "mean_stunting_male")
 # more sensible row names
 rownames(df) = df$country
+
+# add region field
+regions = read.csv('input/ISO-3166-Countries-with-Regional-Codes.csv')
 
 # what are we missing?
 print("Number of missing datapoints for each variable:")
