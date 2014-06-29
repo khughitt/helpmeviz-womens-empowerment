@@ -128,7 +128,7 @@ visualize. Let's now load that complete dataset and see what we can find.
 
 #### Data fields
 
-The fields contained in the dataset `Stunting3.csv` include:
+The fields contained in the dataset `Stunting4.csv` include:
 
 * Country name
 * 2012 Seats in National Parliament (% female)
@@ -144,9 +144,8 @@ The fields contained in the dataset `Stunting3.csv` include:
 * 2011 Under-five Mortality rate (IFPRI)
 * 2010-2012 Prevalence of undernourishment in the population (IFPRI)
 * 2008-2012 Prevalence of underweight in children under five years (IFPRI)
-* Expr1024 (?)
 * Percent children with stunting (Female)
-* Percent children with stunting (Female)
+* Percent children with stunting (Male)
 
 ```{r load_combined_dataset}
 
@@ -160,15 +159,28 @@ colnames(df) = c("country", "seats_parlim_female", "maternal_mortality_ratio",
                  "labor_participation_male", "GII_2010", "GII_2012",
                  "ifpri_hunger_index", "ifpri_under5_mortality",
                  "ifpri_undernourishment", "ifpri_under5_underweight",
-                 "Expr1024", "mean_stunting_female", "mean_stunting_male")
+                 "mean_stunting_female", "mean_stunting_male")
+# more sensible row names
+rownames(df) = df$country
 
-# create a combined column
-df = df %>% mutate(mean_stunting_all = mean_stunting_female + mean_stunting_male)
+# what are we missing?
+print("Number of missing datapoints for each variable:")
+apply(df, 2, function (x) {sum(is.na(x))})
+
+print("Countries with missing data:")
+df$country[!complete.cases(df)]
 
 # create a version which includes only those countries that have all data
 # fields populated
 df_complete = df[complete.cases(df),]
+```
 
+Let's see what the dataset looks like now at this point:
+
+```{r data_preview, results='asis'}
+kable(df_complete[1:5,2:5])
+kable(df_complete[1:5,6:10])
+kable(df_complete[1:5,11:16])
 ```
 
 Visualization
@@ -189,6 +201,17 @@ plot(bpca(df_complete[-1]),
      var.factor=.5,
      obj.names=TRUE,
      obj.labels=df_complete$country)
+```
+
+### Combine similar features
+
+In order to continue simplifying our dataset, let's combine some of the fields
+above that turn out to be very similar.
+
+```{r combine_params}
+# create a combined column
+df = df %>% mutate(mean_stunting_all = mean_stunting_female + mean_stunting_male)
+
 ```
 
 ### Mean Stunting Rate vs. Global Inequality Index

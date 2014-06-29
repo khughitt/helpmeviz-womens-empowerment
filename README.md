@@ -139,9 +139,8 @@ The fields contained in the dataset `Stunting3.csv` include:
 * 2011 Under-five Mortality rate (IFPRI)
 * 2010-2012 Prevalence of undernourishment in the population (IFPRI)
 * 2008-2012 Prevalence of underweight in children under five years (IFPRI)
-* Expr1024 (?)
 * Percent children with stunting (Female)
-* Percent children with stunting (Female)
+* Percent children with stunting (Male)
 
 
 ```r
@@ -155,15 +154,111 @@ colnames(df) = c("country", "seats_parlim_female", "maternal_mortality_ratio",
                  "labor_participation_male", "GII_2010", "GII_2012",
                  "ifpri_hunger_index", "ifpri_under5_mortality",
                  "ifpri_undernourishment", "ifpri_under5_underweight",
-                 "Expr1024", "mean_stunting_female", "mean_stunting_male")
+                 "mean_stunting_female", "mean_stunting_male")
+# more sensible row names
+rownames(df) = df$country
 
-# create a combined column
-df = df %>% mutate(mean_stunting_all = mean_stunting_female + mean_stunting_male)
+# what are we missing?
+print("Number of missing datapoints for each variable:")
+```
 
+```
+## [1] "Number of missing datapoints for each variable:"
+```
+
+```r
+apply(df, 2, function (x) {sum(is.na(x))})
+```
+
+```
+##                    country        seats_parlim_female 
+##                          0                          1 
+##   maternal_mortality_ratio  adolescent_fertility_rate 
+##                          0                          0 
+## secondary_education_female   secondary_education_male 
+##                          8                          8 
+## labor_participation_female   labor_participation_male 
+##                          1                          1 
+##                   GII_2010                   GII_2012 
+##                         17                         10 
+##         ifpri_hunger_index     ifpri_under5_mortality 
+##                          4                          0 
+##     ifpri_undernourishment   ifpri_under5_underweight 
+##                          4                          0 
+##       mean_stunting_female         mean_stunting_male 
+##                          0                          0
+```
+
+```r
+print("Countries with missing data:")
+```
+
+```
+## [1] "Countries with missing data:"
+```
+
+```r
+df$country[!complete.cases(df)]
+```
+
+```
+##  [1] Azerbaijan   Belarus      Bhutan       Burkina Faso Chad        
+##  [6] Comoros      Djibouti     Eritrea      Ethiopia     Fiji        
+## [11] Iraq         Lebanon      Myanmar      Oman         Serbia      
+## [16] Suriname     Timor-Leste  Tunisia      Uzbekistan  
+## 73 Levels: Albania Armenia Azerbaijan Belarus Benin Bhutan ... Zimbabwe
+```
+
+```r
 # create a version which includes only those countries that have all data
 # fields populated
 df_complete = df[complete.cases(df),]
 ```
+
+Let's see what the dataset looks like now at this point:
+
+
+```r
+kable(df_complete[1:5,2:5])
+```
+
+
+
+|         | seats_parlim_female| maternal_mortality_ratio| adolescent_fertility_rate| secondary_education_female|
+|:--------|-------------------:|------------------------:|-------------------------:|--------------------------:|
+|Albania  |                15.7|                       27|                      14.9|                       78.8|
+|Armenia  |                10.7|                       30|                      33.2|                       94.1|
+|Benin    |                 8.4|                      350|                      97.0|                       11.2|
+|Botswana |                 7.9|                      160|                      43.8|                       73.6|
+|Brazil   |                 9.6|                       56|                      76.0|                       50.5|
+
+```r
+kable(df_complete[1:5,6:10])
+```
+
+
+
+|         | secondary_education_male| labor_participation_female| labor_participation_male| GII_2010| GII_2012|
+|:--------|------------------------:|--------------------------:|------------------------:|--------:|--------:|
+|Albania  |                     85.0|                       49.6|                     71.3|    0.261|    0.251|
+|Armenia  |                     94.8|                       49.4|                     70.2|    0.355|    0.340|
+|Benin    |                     25.6|                       67.4|                     78.2|    0.614|    0.618|
+|Botswana |                     77.5|                       71.7|                     81.6|    0.497|    0.485|
+|Brazil   |                     48.5|                       59.6|                     80.9|    0.446|    0.447|
+
+```r
+kable(df_complete[1:5,11:16])
+```
+
+
+
+|         | ifpri_hunger_index| ifpri_under5_mortality| ifpri_undernourishment| ifpri_under5_underweight| mean_stunting_female| mean_stunting_male|
+|:--------|------------------:|----------------------:|----------------------:|------------------------:|--------------------:|------------------:|
+|Albania  |                5.2|                    1.4|                    7.8|                      6.3|                28.43|              30.93|
+|Armenia  |                5.0|                    1.8|                    3.0|                      5.3|                18.10|              19.57|
+|Benin    |               13.3|                   10.6|                    8.1|                     21.2|                39.50|              44.40|
+|Botswana |               13.9|                    2.6|                   27.9|                     11.2|                27.65|              32.80|
+|Brazil   |                5.0|                    1.6|                    6.9|                      3.0|                 5.80|               8.30|
 
 Visualization
 -------------
@@ -187,6 +282,17 @@ plot(bpca(df_complete[-1]),
 ```
 
 ![plot of chunk biplot](figure/biplot.png) 
+
+### Combine similar features
+
+In order to continue simplifying our dataset, let's combine some of the fields
+above that turn out to be very similar.
+
+
+```r
+# create a combined column
+df = df %>% mutate(mean_stunting_all = mean_stunting_female + mean_stunting_male)
+```
 
 ### Mean Stunting Rate vs. Global Inequality Index
 
