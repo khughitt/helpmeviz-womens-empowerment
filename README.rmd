@@ -77,6 +77,9 @@ A table containing country/region mappings was downloaded from:
 
 * [https://github.com/lukes/](https://github.com/lukes/ISO-3166-Countries-with-Regional-Codes/blob/master/all/all.csv)
 
+Finally, a mapping from region codes to region names was retrieved from:
+
+* [https://github.com/nexgenta/geo/](https://github.com/nexgenta/geo/blob/master/data/00-georegion.csv)
 
 Data preparation
 ----------------
@@ -160,22 +163,44 @@ colnames(df) = c("country", "seats_parlim_female", "maternal_mortality_ratio",
                  "ifpri_hunger_index", "ifpri_under5_mortality",
                  "ifpri_undernourishment", "ifpri_under5_underweight",
                  "mean_stunting_female", "mean_stunting_male")
+
 # more sensible row names
 rownames(df) = df$country
 
-# add region field
-regions = read.csv('input/ISO-3166-Countries-with-Regional-Codes.csv')
+# load region info
+region_info = read.delim('input/ISO-3166-Countries-with-Regional-Codes.csv')
+region_names = read.csv('input/georegion.csv')
+
+region_info = merge(region_info, region_names, 
+                    by.x='region.code', by.y='M49.numeric.code')
+
+# map region names to region codes
+# there must be a better way to do this...
+#levels(region_info$region.code) = region_info$Region
+
+regions = merge(df, region_info, by.x='country', by.y='name')$region.code
+#levels(regions$region.code) = regions$Region
+#regions = regions$region.code
+
+# store country names separately to make it easy to work with the remaining
+# numeric predictor and outcome variables
+country_names = as.character(df$country)
+df = df %>% select(-country)
 
 # what are we missing?
 print("Number of missing datapoints for each variable:")
 apply(df, 2, function (x) {sum(is.na(x))})
 
 print("Countries with missing data:")
-df$country[!complete.cases(df)]
+country_names[!complete.cases(df)]
 
 # create a version which includes only those countries that have all data
 # fields populated
 df_complete = df[complete.cases(df),]
+country_names_complete = country_names[complete.cases(df)]
+
+regions_complete = regions[complete.cases(df)]
+#levels(regions_complete) = levels(regions)[complete.cases(df)]
 ```
 
 Let's see what the dataset looks like now at this point:
@@ -183,7 +208,7 @@ Let's see what the dataset looks like now at this point:
 ```{r data_preview, results='asis'}
 kable(df_complete[1:5,2:5])
 kable(df_complete[1:5,6:10])
-kable(df_complete[1:5,11:16])
+kable(df_complete[1:5,11:15])
 ```
 
 Visualization
@@ -199,11 +224,19 @@ tool called a [biplot](http://en.wikipedia.org/wiki/Biplot) is used for this.
 
 ```{r biplot_orig, dev=c('png', 'svg')}
 library(bpca)
+library(RColorBrewer)
 
-plot(bpca(df_complete[-1]),
+# region colors
+region_colors = brewer.pal(length(unique(regions_complete)), "Set1")[
+                                 as.numeric(as.factor(regions_complete))]
+#levels(region_colors) = levels(regions_complete)
+
+# biplot of uncleaned data
+plot(bpca(df_complete),
      var.factor=.5,
      obj.names=TRUE,
-     obj.labels=df_complete$country)
+     obj.col=region_colors,
+     obj.labels=country_names_complete)
 title("biplot (original)")
 ```
 
@@ -211,8 +244,10 @@ Another way to visualize these relationships is using a heatmap:
 
 ```{r heatmap_orig}
 library(gplots)
-heatmap.2(log1p(as.matrix(df_complete[-1])), 
-          trace="none", margins=c(12,8), main="Heatmap (original)")
+heatmap.2(log1p(as.matrix(df_complete)), 
+          RowSideColors=region_colors,
+          trace="none", margins=c(12,8), 
+          xlab="Measure", ylab="Country", main="Heatmap (original)")
 ```
 
 A few interesting things to note here:
@@ -227,7 +262,7 @@ A few interesting things to note here:
 Finally, let's look at the the correlations between the variables directly:
 
 ```{r variable_correlations}
-heatmap.2(cor(df_complete[-1]), trace="none", margins=c(13,13), main="Variable
+heatmap.2(cor(df_complete), trace="none", margins=c(13,13), main="Variable
           correlations (original)")
 ```
 
@@ -261,7 +296,7 @@ df_complete = df_complete %>%
     select(-mean_stunting_female, -mean_stunting_male, -GII_2010, -GII_2012,
            -secondary_education_male, -secondary_education_female,
            -labor_participation_male)
-row.names(df_complete) = df_complete$country
+row.names(df_complete) = country_names_complete
 
 # Save this dataset
 write.csv(df_complete, file='output/Stunting_clean.csv', row.names=FALSE)
@@ -271,18 +306,21 @@ Let's redo some of the above plots to see how things look now...
 
 ```{r cleaned_data_plots}
 # biplot
-plot(bpca(df_complete[-1]),
+plot(bpca(df_complete),
      var.factor=.5,
+     obj.col=region_colors,
      obj.names=TRUE,
-     obj.labels=df_complete$country)
+     obj.labels=country_names_complete)
 title("Biplot (clean)")
 
 # country and variable biclustering and heatmap
-heatmap.2(log1p(as.matrix(df_complete[-1])), 
-          trace="none", margins=c(12,8), main="Heatmap (clean)")
+heatmap.2(log1p(as.matrix(df_complete)), 
+          RowSideColors=region_colors,
+          trace="none", margins=c(12,8), 
+          xlab="Measure", ylab="Country", main="Heatmap (clean)")
 
 # variable correlations
-heatmap.2(cor(df_complete[-1]), trace="none", margins=c(13,13), main="Variable
+heatmap.2(cor(df_complete), trace="none", margins=c(13,13), main="Variable
           correlations (clean)")
 ```
 
@@ -295,9 +333,9 @@ library(ggplot2)
 
 rho = cor(df_complete$GII, df_complete$mean_stunting)
 
-ggplot(df_complete, aes(GII, mean_stunting, label=country)) + 
-    geom_point() + 
-    geom_text(aes(label=country, hjust=-0.2, vjust=-0.2, size=0.4)) + 
+ggplot(df_complete, aes(GII, mean_stunting, label=country_names_complete)) + 
+    geom_point(aes(color=region_colors)) + 
+    geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) + 
     geom_smooth(method="lm") +
     xlab('Global Inequality Index') +
     ylab('Mean Stunting Rate') + 
@@ -309,9 +347,9 @@ ggplot(df_complete, aes(GII, mean_stunting, label=country)) +
 ```{r stunting_vs_education}
 rho = cor(df_complete$secondary_education, df_complete$mean_stunting)
 
-ggplot(df_complete, aes(secondary_education, mean_stunting, label=country)) + 
-    geom_point() + 
-    geom_text(aes(label=country, hjust=-0.2, vjust=-0.2, size=0.4)) + 
+ggplot(df_complete, aes(secondary_education, mean_stunting, label=country_names_complete)) + 
+    geom_point(aes(color=region_colors)) + 
+    geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) + 
     geom_smooth(method="lm") +
     xlab('Rate of Population with Secondary Education or Higher') +
     ylab('Mean Stunting Rate') + 

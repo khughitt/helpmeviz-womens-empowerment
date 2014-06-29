@@ -69,8 +69,11 @@ of those tables are included in the `input` folder.
 
 A table containing country/region mappings was downloaded from:
 
-* [https://github.com/okfn/iatitools/](https://github.com/okfn/iatitools/blob/master/mapping/ISO-DAC-Countries-Regions.csv)
+* [https://github.com/lukes/](https://github.com/lukes/ISO-3166-Countries-with-Regional-Codes/blob/master/all/all.csv)
 
+Finally, a mapping from region codes to region names was retrieved from:
+
+* [https://github.com/nexgenta/geo/](https://github.com/nexgenta/geo/blob/master/data/00-georegion.csv)
 
 Data preparation
 ----------------
@@ -155,8 +158,29 @@ colnames(df) = c("country", "seats_parlim_female", "maternal_mortality_ratio",
                  "ifpri_hunger_index", "ifpri_under5_mortality",
                  "ifpri_undernourishment", "ifpri_under5_underweight",
                  "mean_stunting_female", "mean_stunting_male")
+
 # more sensible row names
 rownames(df) = df$country
+
+# load region info
+region_info = read.delim('input/ISO-3166-Countries-with-Regional-Codes.csv')
+region_names = read.csv('input/georegion.csv')
+
+region_info = merge(region_info, region_names, 
+                    by.x='region.code', by.y='M49.numeric.code')
+
+# map region names to region codes
+# there must be a better way to do this...
+#levels(region_info$region.code) = region_info$Region
+
+regions = merge(df, region_info, by.x='country', by.y='name')$region.code
+#levels(regions$region.code) = regions$Region
+#regions = regions$region.code
+
+# store country names separately to make it easy to work with the remaining
+# numeric predictor and outcome variables
+country_names = as.character(df$country)
+df = df %>% select(-country)
 
 # what are we missing?
 print("Number of missing datapoints for each variable:")
@@ -171,22 +195,22 @@ apply(df, 2, function (x) {sum(is.na(x))})
 ```
 
 ```
-##                    country        seats_parlim_female 
-##                          0                          1 
-##   maternal_mortality_ratio  adolescent_fertility_rate 
+##        seats_parlim_female   maternal_mortality_ratio 
+##                          1                          0 
+##  adolescent_fertility_rate secondary_education_female 
+##                          0                          8 
+##   secondary_education_male labor_participation_female 
+##                          8                          1 
+##   labor_participation_male                   GII_2010 
+##                          1                         17 
+##                   GII_2012         ifpri_hunger_index 
+##                         10                          4 
+##     ifpri_under5_mortality     ifpri_undernourishment 
+##                          0                          4 
+##   ifpri_under5_underweight       mean_stunting_female 
 ##                          0                          0 
-## secondary_education_female   secondary_education_male 
-##                          8                          8 
-## labor_participation_female   labor_participation_male 
-##                          1                          1 
-##                   GII_2010                   GII_2012 
-##                         17                         10 
-##         ifpri_hunger_index     ifpri_under5_mortality 
-##                          4                          0 
-##     ifpri_undernourishment   ifpri_under5_underweight 
-##                          4                          0 
-##       mean_stunting_female         mean_stunting_male 
-##                          0                          0
+##         mean_stunting_male 
+##                          0
 ```
 
 ```r
@@ -198,21 +222,25 @@ print("Countries with missing data:")
 ```
 
 ```r
-df$country[!complete.cases(df)]
+country_names[!complete.cases(df)]
 ```
 
 ```
-##  [1] Azerbaijan   Belarus      Bhutan       Burkina Faso Chad        
-##  [6] Comoros      Djibouti     Eritrea      Ethiopia     Fiji        
-## [11] Iraq         Lebanon      Myanmar      Oman         Serbia      
-## [16] Suriname     Timor-Leste  Tunisia      Uzbekistan  
-## 73 Levels: Albania Armenia Azerbaijan Belarus Benin Bhutan ... Zimbabwe
+##  [1] "Azerbaijan"   "Belarus"      "Bhutan"       "Burkina Faso"
+##  [5] "Chad"         "Comoros"      "Djibouti"     "Eritrea"     
+##  [9] "Ethiopia"     "Fiji"         "Iraq"         "Lebanon"     
+## [13] "Myanmar"      "Oman"         "Serbia"       "Suriname"    
+## [17] "Timor-Leste"  "Tunisia"      "Uzbekistan"
 ```
 
 ```r
 # create a version which includes only those countries that have all data
 # fields populated
 df_complete = df[complete.cases(df),]
+country_names_complete = country_names[complete.cases(df)]
+
+regions_complete = regions[complete.cases(df)]
+#levels(regions_complete) = levels(regions)[complete.cases(df)]
 ```
 
 Let's see what the dataset looks like now at this point:
@@ -224,13 +252,13 @@ kable(df_complete[1:5,2:5])
 
 
 
-|         | seats_parlim_female| maternal_mortality_ratio| adolescent_fertility_rate| secondary_education_female|
-|:--------|-------------------:|------------------------:|-------------------------:|--------------------------:|
-|Albania  |                15.7|                       27|                      14.9|                       78.8|
-|Armenia  |                10.7|                       30|                      33.2|                       94.1|
-|Benin    |                 8.4|                      350|                      97.0|                       11.2|
-|Botswana |                 7.9|                      160|                      43.8|                       73.6|
-|Brazil   |                 9.6|                       56|                      76.0|                       50.5|
+|         | maternal_mortality_ratio| adolescent_fertility_rate| secondary_education_female| secondary_education_male|
+|:--------|------------------------:|-------------------------:|--------------------------:|------------------------:|
+|Albania  |                       27|                      14.9|                       78.8|                     85.0|
+|Armenia  |                       30|                      33.2|                       94.1|                     94.8|
+|Benin    |                      350|                      97.0|                       11.2|                     25.6|
+|Botswana |                      160|                      43.8|                       73.6|                     77.5|
+|Brazil   |                       56|                      76.0|                       50.5|                     48.5|
 
 ```r
 kable(df_complete[1:5,6:10])
@@ -238,27 +266,27 @@ kable(df_complete[1:5,6:10])
 
 
 
-|         | secondary_education_male| labor_participation_female| labor_participation_male| GII_2010| GII_2012|
-|:--------|------------------------:|--------------------------:|------------------------:|--------:|--------:|
-|Albania  |                     85.0|                       49.6|                     71.3|    0.261|    0.251|
-|Armenia  |                     94.8|                       49.4|                     70.2|    0.355|    0.340|
-|Benin    |                     25.6|                       67.4|                     78.2|    0.614|    0.618|
-|Botswana |                     77.5|                       71.7|                     81.6|    0.497|    0.485|
-|Brazil   |                     48.5|                       59.6|                     80.9|    0.446|    0.447|
+|         | labor_participation_female| labor_participation_male| GII_2010| GII_2012| ifpri_hunger_index|
+|:--------|--------------------------:|------------------------:|--------:|--------:|------------------:|
+|Albania  |                       49.6|                     71.3|    0.261|    0.251|                5.2|
+|Armenia  |                       49.4|                     70.2|    0.355|    0.340|                5.0|
+|Benin    |                       67.4|                     78.2|    0.614|    0.618|               13.3|
+|Botswana |                       71.7|                     81.6|    0.497|    0.485|               13.9|
+|Brazil   |                       59.6|                     80.9|    0.446|    0.447|                5.0|
 
 ```r
-kable(df_complete[1:5,11:16])
+kable(df_complete[1:5,11:15])
 ```
 
 
 
-|         | ifpri_hunger_index| ifpri_under5_mortality| ifpri_undernourishment| ifpri_under5_underweight| mean_stunting_female| mean_stunting_male|
-|:--------|------------------:|----------------------:|----------------------:|------------------------:|--------------------:|------------------:|
-|Albania  |                5.2|                    1.4|                    7.8|                      6.3|                28.43|              30.93|
-|Armenia  |                5.0|                    1.8|                    3.0|                      5.3|                18.10|              19.57|
-|Benin    |               13.3|                   10.6|                    8.1|                     21.2|                39.50|              44.40|
-|Botswana |               13.9|                    2.6|                   27.9|                     11.2|                27.65|              32.80|
-|Brazil   |                5.0|                    1.6|                    6.9|                      3.0|                 5.80|               8.30|
+|         | ifpri_under5_mortality| ifpri_undernourishment| ifpri_under5_underweight| mean_stunting_female| mean_stunting_male|
+|:--------|----------------------:|----------------------:|------------------------:|--------------------:|------------------:|
+|Albania  |                    1.4|                    7.8|                      6.3|                28.43|              30.93|
+|Armenia  |                    1.8|                    3.0|                      5.3|                18.10|              19.57|
+|Benin    |                   10.6|                    8.1|                     21.2|                39.50|              44.40|
+|Botswana |                    2.6|                   27.9|                     11.2|                27.65|              32.80|
+|Brazil   |                    1.6|                    6.9|                      3.0|                 5.80|               8.30|
 
 Visualization
 -------------
@@ -274,11 +302,19 @@ tool called a [biplot](http://en.wikipedia.org/wiki/Biplot) is used for this.
 
 ```r
 library(bpca)
+library(RColorBrewer)
 
-plot(bpca(df_complete[-1]),
+# region colors
+region_colors = brewer.pal(length(unique(regions_complete)), "Set1")[
+                                 as.numeric(as.factor(regions_complete))]
+#levels(region_colors) = levels(regions_complete)
+
+# biplot of uncleaned data
+plot(bpca(df_complete),
      var.factor=.5,
      obj.names=TRUE,
-     obj.labels=df_complete$country)
+     obj.col=region_colors,
+     obj.labels=country_names_complete)
 title("biplot (original)")
 ```
 
@@ -289,8 +325,10 @@ Another way to visualize these relationships is using a heatmap:
 
 ```r
 library(gplots)
-heatmap.2(log1p(as.matrix(df_complete[-1])), 
-          trace="none", margins=c(12,8), main="Heatmap (original)")
+heatmap.2(log1p(as.matrix(df_complete)), 
+          RowSideColors=region_colors,
+          trace="none", margins=c(12,8), 
+          xlab="Measure", ylab="Country", main="Heatmap (original)")
 ```
 
 ![plot of chunk heatmap_orig](figure/heatmap_orig.png) 
@@ -308,7 +346,7 @@ Finally, let's look at the the correlations between the variables directly:
 
 
 ```r
-heatmap.2(cor(df_complete[-1]), trace="none", margins=c(13,13), main="Variable
+heatmap.2(cor(df_complete), trace="none", margins=c(13,13), main="Variable
           correlations (original)")
 ```
 
@@ -345,7 +383,7 @@ df_complete = df_complete %>%
     select(-mean_stunting_female, -mean_stunting_male, -GII_2010, -GII_2012,
            -secondary_education_male, -secondary_education_female,
            -labor_participation_male)
-row.names(df_complete) = df_complete$country
+row.names(df_complete) = country_names_complete
 
 # Save this dataset
 write.csv(df_complete, file='output/Stunting_clean.csv', row.names=FALSE)
@@ -356,10 +394,11 @@ Let's redo some of the above plots to see how things look now...
 
 ```r
 # biplot
-plot(bpca(df_complete[-1]),
+plot(bpca(df_complete),
      var.factor=.5,
+     obj.col=region_colors,
      obj.names=TRUE,
-     obj.labels=df_complete$country)
+     obj.labels=country_names_complete)
 title("Biplot (clean)")
 ```
 
@@ -367,15 +406,17 @@ title("Biplot (clean)")
 
 ```r
 # country and variable biclustering and heatmap
-heatmap.2(log1p(as.matrix(df_complete[-1])), 
-          trace="none", margins=c(12,8), main="Heatmap (clean)")
+heatmap.2(log1p(as.matrix(df_complete)), 
+          RowSideColors=region_colors,
+          trace="none", margins=c(12,8), 
+          xlab="Measure", ylab="Country", main="Heatmap (clean)")
 ```
 
 ![plot of chunk cleaned_data_plots](figure/cleaned_data_plots2.png) 
 
 ```r
 # variable correlations
-heatmap.2(cor(df_complete[-1]), trace="none", margins=c(13,13), main="Variable
+heatmap.2(cor(df_complete), trace="none", margins=c(13,13), main="Variable
           correlations (clean)")
 ```
 
@@ -391,9 +432,9 @@ library(ggplot2)
 
 rho = cor(df_complete$GII, df_complete$mean_stunting)
 
-ggplot(df_complete, aes(GII, mean_stunting, label=country)) + 
-    geom_point() + 
-    geom_text(aes(label=country, hjust=-0.2, vjust=-0.2, size=0.4)) + 
+ggplot(df_complete, aes(GII, mean_stunting, label=country_names_complete)) + 
+    geom_point(aes(color=region_colors)) + 
+    geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) + 
     geom_smooth(method="lm") +
     xlab('Global Inequality Index') +
     ylab('Mean Stunting Rate') + 
@@ -408,9 +449,9 @@ ggplot(df_complete, aes(GII, mean_stunting, label=country)) +
 ```r
 rho = cor(df_complete$secondary_education, df_complete$mean_stunting)
 
-ggplot(df_complete, aes(secondary_education, mean_stunting, label=country)) + 
-    geom_point() + 
-    geom_text(aes(label=country, hjust=-0.2, vjust=-0.2, size=0.4)) + 
+ggplot(df_complete, aes(secondary_education, mean_stunting, label=country_names_complete)) + 
+    geom_point(aes(color=region_colors)) + 
+    geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) + 
     geom_smooth(method="lm") +
     xlab('Rate of Population with Secondary Education or Higher') +
     ylab('Mean Stunting Rate') + 
@@ -444,10 +485,11 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] ggplot2_1.0.0        gplots_2.13.0        bpca_1.2-2          
-##  [4] rgl_0.93.996         scatterplot3d_0.3-35 dplyr_0.2           
-##  [7] knitr_1.6.5          rmarkdown_0.2.49     knitrBootstrap_1.0.0
-## [10] vimcom.plus_1.0-0    setwidth_1.0-3       colorout_1.0-3      
+##  [1] plyr_1.8.1           RColorBrewer_1.0-5   ggplot2_1.0.0       
+##  [4] gplots_2.13.0        bpca_1.2-2           rgl_0.93.996        
+##  [7] scatterplot3d_0.3-35 dplyr_0.2            knitr_1.6.5         
+## [10] rmarkdown_0.2.49     knitrBootstrap_1.0.0 vimcom.plus_1.0-0   
+## [13] setwidth_1.0-3       colorout_1.0-3      
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] assertthat_0.1     bitops_1.0-6       caTools_1.17      
@@ -456,8 +498,7 @@ sessionInfo()
 ## [10] gtable_0.1.2       gtools_3.4.0       htmltools_0.2.4   
 ## [13] KernSmooth_2.23-12 labeling_0.2       magrittr_1.0.1    
 ## [16] markdown_0.7       MASS_7.3-31        mime_0.1.1        
-## [19] munsell_0.4.2      parallel_3.1.0     plyr_1.8.1        
-## [22] proto_0.3-10       Rcpp_0.11.1        reshape2_1.4      
-## [25] scales_0.2.4       stringr_0.6.2      tools_3.1.0       
-## [28] yaml_2.1.11
+## [19] munsell_0.4.2      parallel_3.1.0     proto_0.3-10      
+## [22] Rcpp_0.11.1        reshape2_1.4       scales_0.2.4      
+## [25] stringr_0.6.2      tools_3.1.0        yaml_2.1.11
 ```
