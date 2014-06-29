@@ -345,6 +345,7 @@ df_complete = df_complete %>%
     select(-mean_stunting_female, -mean_stunting_male, -GII_2010, -GII_2012,
            -secondary_education_male, -secondary_education_female,
            -labor_participation_male)
+row.names(df_complete) = df_complete$country
 
 # Save this dataset
 write.csv(df_complete, file='output/Stunting_clean.csv', row.names=FALSE)
@@ -380,7 +381,7 @@ heatmap.2(cor(df_complete[-1]), trace="none", margins=c(13,13), main="Variable
 
 ![plot of chunk cleaned_data_plots](figure/cleaned_data_plots3.png) 
 
-### Mean Stunting Rate vs. Global Inequality Index
+### Stunting Rate vs. Global Inequality Index
 
 [SVG version](figure/stunting_vs_gii.svg)
 
@@ -388,7 +389,10 @@ heatmap.2(cor(df_complete[-1]), trace="none", margins=c(13,13), main="Variable
 ```r
 library(ggplot2)
 
-ggplot(df_complete, aes(GII, mean_stunting)) + geom_point() + geom_smooth() +
+ggplot(df_complete, aes(GII, mean_stunting, label=country)) + 
+    geom_point() + 
+    geom_text(aes(label=country, hjust=-0.2, vjust=-0.2, size=0.4)) + 
+    geom_smooth() +
     xlab('Global Inequality Index') +
     ylab('Mean Stunting Rate') + 
     ggtitle('Stunting rate vs. Gender Inequality')
@@ -399,6 +403,24 @@ ggplot(df_complete, aes(GII, mean_stunting)) + geom_point() + geom_smooth() +
 ```
 
 ![plot of chunk stunting_vs_gii](figure/stunting_vs_gii.png) 
+
+### Stunting vs. Secondary Education
+
+
+```r
+rho = cor(df_complete$secondary_education, df_complete$mean_stunting)
+
+ggplot(df_complete, aes(secondary_education, mean_stunting, label=country)) + 
+    geom_point() + 
+    geom_text(aes(label=country, hjust=-0.2, vjust=-0.2, size=0.4)) + 
+    geom_smooth(method="lm") +
+    xlab('Rate of Population with Secondary Education or Higher') +
+    ylab('Mean Stunting Rate') + 
+    ggtitle(sprintf('Stunting rate vs. Rate of Population with Secondary Education or 
+             Higher (cor=%0.2f)', rho))
+```
+
+![plot of chunk stunting_vs_education](figure/stunting_vs_education.png) 
 
 System Information
 ------------------
@@ -424,7 +446,7 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] gplots_2.13.0        ggplot2_1.0.0        bpca_1.2-2          
+##  [1] ggplot2_1.0.0        gplots_2.13.0        bpca_1.2-2          
 ##  [4] rgl_0.93.996         scatterplot3d_0.3-35 dplyr_0.2           
 ##  [7] knitr_1.6.5          rmarkdown_0.2.49     knitrBootstrap_1.0.0
 ## [10] vimcom.plus_1.0-0    setwidth_1.0-3       colorout_1.0-3      

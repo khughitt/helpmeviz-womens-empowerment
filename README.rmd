@@ -258,6 +258,7 @@ df_complete = df_complete %>%
     select(-mean_stunting_female, -mean_stunting_male, -GII_2010, -GII_2012,
            -secondary_education_male, -secondary_education_female,
            -labor_participation_male)
+row.names(df_complete) = df_complete$country
 
 # Save this dataset
 write.csv(df_complete, file='output/Stunting_clean.csv', row.names=FALSE)
@@ -282,17 +283,36 @@ heatmap.2(cor(df_complete[-1]), trace="none", margins=c(13,13), main="Variable
           correlations (clean)")
 ```
 
-### Mean Stunting Rate vs. Global Inequality Index
+### Stunting Rate vs. Global Inequality Index
 
 [SVG version](figure/stunting_vs_gii.svg)
 
 ```{r stunting_vs_gii, dev=c('png', 'svg')}
 library(ggplot2)
 
-ggplot(df_complete, aes(GII, mean_stunting)) + geom_point() + geom_smooth() +
+ggplot(df_complete, aes(GII, mean_stunting, label=country)) + 
+    geom_point() + 
+    geom_text(aes(label=country, hjust=-0.2, vjust=-0.2, size=0.4)) + 
+    geom_smooth() +
     xlab('Global Inequality Index') +
     ylab('Mean Stunting Rate') + 
     ggtitle('Stunting rate vs. Gender Inequality')
+```
+
+### Stunting vs. Secondary Education
+
+```{r stunting_vs_education}
+rho = cor(df_complete$secondary_education, df_complete$mean_stunting)
+
+ggplot(df_complete, aes(secondary_education, mean_stunting, label=country)) + 
+    geom_point() + 
+    geom_text(aes(label=country, hjust=-0.2, vjust=-0.2, size=0.4)) + 
+    geom_smooth(method="lm") +
+    xlab('Rate of Population with Secondary Education or Higher') +
+    ylab('Mean Stunting Rate') + 
+    ggtitle(sprintf('Stunting rate vs. Rate of Population with Secondary Education or 
+             Higher (cor=%0.2f)', rho))
+
 ```
 
 System Information
