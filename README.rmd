@@ -1,4 +1,6 @@
 ---
+author: "Keith Hughitt"
+date: "06/28/2014"
 output:
   knitrBootstrap::bootstrap_document:
     title: "Bread for the World: Women's Empowerment and Nutrition"
@@ -178,7 +180,7 @@ Let's start by exploring the relationship between the various predictors and
 our outcome of interest; rate of stunting. Below, a data-dimension reduction
 tool called a [biplot](http://en.wikipedia.org/wiki/Biplot) is used for this.
 
-```{r biplot}
+```{r biplot, dev='svg'}
 library(bpca)
 
 plot(bpca(df_complete[-1]),
@@ -189,7 +191,7 @@ plot(bpca(df_complete[-1]),
 
 ### Mean Stunting Rate vs. Global Inequality Index
 
-```{r stunting_vs_gii}
+```{r stunting_vs_gii, dev='svg'}
 library(ggplot2)
 
 ggplot(df, aes(GII_2012, mean_stunting_all)) + geom_point() + geom_smooth() +
@@ -204,4 +206,3 @@ System Information
 ```{r sysinfo}
 sessionInfo()
 ```
-
