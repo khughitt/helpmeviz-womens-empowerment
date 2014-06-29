@@ -180,7 +180,9 @@ Let's start by exploring the relationship between the various predictors and
 our outcome of interest; rate of stunting. Below, a data-dimension reduction
 tool called a [biplot](http://en.wikipedia.org/wiki/Biplot) is used for this.
 
-```{r biplot, dev='svg'}
+[SVG version](figure/biplot.svg).
+
+```{r biplot, dev=c('png', 'svg')}
 library(bpca)
 
 plot(bpca(df_complete[-1]),
@@ -191,7 +193,9 @@ plot(bpca(df_complete[-1]),
 
 ### Mean Stunting Rate vs. Global Inequality Index
 
-```{r stunting_vs_gii, dev='svg'}
+[SVG version](figure/stunting_vs_gii.svg)
+
+```{r stunting_vs_gii, dev=c('png', 'svg')}
 library(ggplot2)
 
 ggplot(df, aes(GII_2012, mean_stunting_all)) + geom_point() + geom_smooth() +

@@ -80,22 +80,6 @@ Data preparation
 
 ```r
 library(dplyr)
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-## 
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 options(StringsAsFactors=FALSE)
 
 # Load stunting data
@@ -190,26 +174,23 @@ Let's start by exploring the relationship between the various predictors and
 our outcome of interest; rate of stunting. Below, a data-dimension reduction
 tool called a [biplot](http://en.wikipedia.org/wiki/Biplot) is used for this.
 
+[SVG version](figure/biplot.svg).
+
 
 ```r
 library(bpca)
-```
 
-```
-## Loading required package: scatterplot3d
-## Loading required package: rgl
-```
-
-```r
 plot(bpca(df_complete[-1]),
      var.factor=.5,
      obj.names=TRUE,
      obj.labels=df_complete$country)
 ```
 
-![plot of chunk biplot](figure/biplot.svg) 
+![plot of chunk biplot](figure/biplot.png) 
 
 ### Mean Stunting Rate vs. Global Inequality Index
+
+[SVG version](figure/stunting_vs_gii.svg)
 
 
 ```r
@@ -230,7 +211,7 @@ ggplot(df, aes(GII_2012, mean_stunting_all)) + geom_point() + geom_smooth() +
 ## Warning: Removed 10 rows containing missing values (geom_point).
 ```
 
-![plot of chunk stunting_vs_gii](figure/stunting_vs_gii.svg) 
+![plot of chunk stunting_vs_gii](figure/stunting_vs_gii.png) 
 
 System Information
 ------------------
@@ -256,14 +237,16 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] ggplot2_1.0.0        bpca_1.2-2           rgl_0.93.996        
-## [4] scatterplot3d_0.3-35 dplyr_0.2            knitr_1.6.5         
-## [7] setwidth_1.0-3       colorout_1.0-3      
+##  [1] ggplot2_1.0.0        bpca_1.2-2           rgl_0.93.996        
+##  [4] scatterplot3d_0.3-35 dplyr_0.2            knitr_1.6.5         
+##  [7] rmarkdown_0.2.49     knitrBootstrap_1.0.0 vimcom.plus_1.0-0   
+## [10] setwidth_1.0-3       colorout_1.0-3      
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] assertthat_0.1   colorspace_1.2-4 digest_0.6.4     evaluate_0.5.5  
-##  [5] formatR_0.10     grid_3.1.0       gtable_0.1.2     labeling_0.2    
-##  [9] magrittr_1.0.1   MASS_7.3-31      munsell_0.4.2    parallel_3.1.0  
-## [13] plyr_1.8.1       proto_0.3-10     Rcpp_0.11.1      reshape2_1.4    
-## [17] scales_0.2.4     stringr_0.6.2    tools_3.1.0
+##  [5] formatR_0.10     grid_3.1.0       gtable_0.1.2     htmltools_0.2.4 
+##  [9] labeling_0.2     magrittr_1.0.1   markdown_0.7     MASS_7.3-31     
+## [13] mime_0.1.1       munsell_0.4.2    parallel_3.1.0   plyr_1.8.1      
+## [17] proto_0.3-10     Rcpp_0.11.1      reshape2_1.4     scales_0.2.4    
+## [21] stringr_0.6.2    tools_3.1.0      yaml_2.1.11
 ```
