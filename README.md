@@ -389,17 +389,15 @@ heatmap.2(cor(df_complete[-1]), trace="none", margins=c(13,13), main="Variable
 ```r
 library(ggplot2)
 
+rho = cor(df_complete$GII, df_complete$mean_stunting)
+
 ggplot(df_complete, aes(GII, mean_stunting, label=country)) + 
     geom_point() + 
     geom_text(aes(label=country, hjust=-0.2, vjust=-0.2, size=0.4)) + 
-    geom_smooth() +
+    geom_smooth(method="lm") +
     xlab('Global Inequality Index') +
     ylab('Mean Stunting Rate') + 
-    ggtitle('Stunting rate vs. Gender Inequality')
-```
-
-```
-## geom_smooth: method="auto" and size of largest group is <1000, so using loess. Use 'method = x' to change the smoothing method.
+    ggtitle(sprintf('Stunting rate vs. Gender Inequality (cor=%0.2f)', rho))
 ```
 
 ![plot of chunk stunting_vs_gii](figure/stunting_vs_gii.png) 
