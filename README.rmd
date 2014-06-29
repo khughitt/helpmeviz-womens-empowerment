@@ -194,24 +194,92 @@ tool called a [biplot](http://en.wikipedia.org/wiki/Biplot) is used for this.
 
 [SVG version](figure/biplot.svg).
 
-```{r biplot, dev=c('png', 'svg')}
+```{r biplot_orig, dev=c('png', 'svg')}
 library(bpca)
 
 plot(bpca(df_complete[-1]),
      var.factor=.5,
      obj.names=TRUE,
      obj.labels=df_complete$country)
+title("biplot (original)")
 ```
 
-### Combine similar features
+Another way to visualize these relationships is using a heatmap:
+
+```{r heatmap_orig}
+library(gplots)
+heatmap.2(log1p(as.matrix(df_complete[-1])), 
+          trace="none", margins=c(12,8), main="Heatmap (original)")
+```
+
+A few interesting things to note here:
+
+- GII 2010 & 2012 are *very* similar
+- Maternal mortality looks like an outlier and does not seem to corerlate well
+  with any of the other variables.
+- Something looks amiss with labor_participation_male
+- Not surprising, but there are some clear regional trends in the data (e.g.
+  the bottom-most cluster of North and Central African countries).
+
+Finally, let's look at the the correlations between the variables directly:
+
+```{r variable_correlations}
+heatmap.2(cor(df_complete[-1]), trace="none", margins=c(13,13), main="Variable
+          correlations (original)")
+```
+
+Observations:
+
+- Male and female education are highly correlated with one another, but do not
+  correlate well with any of the other variables of interest.
+- Nutrition and hunger related variables group together, as expected
+- GII is moderately correlated with these variables, including stunting.
+
+### Some more data cleaning
 
 In order to continue simplifying our dataset, let's combine some of the fields
-above that turn out to be very similar.
+above that turn out to be very similar, namely:
+
+- GII 2010 & 2012
+- Stunting male & female
+- Secondary education male & female
+
+For now, let's also drop the labor participation male since it doesn't seem to
+be affected by any of the other variables.
 
 ```{r combine_params}
-# create a combined column
-df = df %>% mutate(mean_stunting_all = mean_stunting_female + mean_stunting_male)
+# combine above variables and drop original columns
+df_complete = df_complete %>% 
+    mutate(
+        mean_stunting = (mean_stunting_female + mean_stunting_male) / 2,
+        GII = (GII_2010 + GII_2012) / 2,
+        secondary_education = (secondary_education_male +
+                               secondary_education_female) / 2) %>% 
+    select(-mean_stunting_female, -mean_stunting_male, -GII_2010, -GII_2012,
+           -secondary_education_male, -secondary_education_female,
+           -labor_participation_male)
 
+# Save this dataset
+write.csv(df_complete, file='output/Stunting_clean.csv', row.names=FALSE)
+```
+
+Let's redo some of the above plots to see how things look now...
+
+```{r cleaned_data_plots}
+# biplot
+plot(bpca(df_complete[-1]),
+     var.factor=.5,
+     obj.names=TRUE,
+     obj.labels=df_complete$country)
+title("Biplot (clean)")
+
+# country and variable biclustering and heatmap
+heatmap.2(log1p(as.matrix(df_complete[-1])), 
+          trace="none", margins=c(12,8), main="Heatmap (clean)")
+
+# variable correlations
+heatmap.2(cor(df_complete[-1]), trace="none", margins=c(13,13), main="Variable
+          correlations (clean)")
 ```
 
 ### Mean Stunting Rate vs. Global Inequality Index
@@ -221,8 +289,8 @@ df = df %>% mutate(mean_stunting_all = mean_stunting_female + mean_stunting_male
 ```{r stunting_vs_gii, dev=c('png', 'svg')}
 library(ggplot2)
 
-ggplot(df, aes(GII_2012, mean_stunting_all)) + geom_point() + geom_smooth() +
-    xlab('Global Inequality Index (2012)') +
+ggplot(df_complete, aes(GII, mean_stunting)) + geom_point() + geom_smooth() +
+    xlab('Global Inequality Index') +
     ylab('Mean Stunting Rate') + 
     ggtitle('Stunting rate vs. Gender Inequality')
 ```

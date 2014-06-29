@@ -123,7 +123,7 @@ visualize. Let's now load that complete dataset and see what we can find.
 
 #### Data fields
 
-The fields contained in the dataset `Stunting3.csv` include:
+The fields contained in the dataset `Stunting4.csv` include:
 
 * Country name
 * 2012 Seats in National Parliament (% female)
@@ -279,20 +279,106 @@ plot(bpca(df_complete[-1]),
      var.factor=.5,
      obj.names=TRUE,
      obj.labels=df_complete$country)
+title("biplot (original)")
 ```
 
-![plot of chunk biplot](figure/biplot.png) 
+![plot of chunk biplot_orig](figure/biplot_orig.png) 
 
-### Combine similar features
-
-In order to continue simplifying our dataset, let's combine some of the fields
-above that turn out to be very similar.
+Another way to visualize these relationships is using a heatmap:
 
 
 ```r
-# create a combined column
-df = df %>% mutate(mean_stunting_all = mean_stunting_female + mean_stunting_male)
+library(gplots)
+heatmap.2(log1p(as.matrix(df_complete[-1])), 
+          trace="none", margins=c(12,8), main="Heatmap (original)")
 ```
+
+![plot of chunk heatmap_orig](figure/heatmap_orig.png) 
+
+A few interesting things to note here:
+
+- GII 2010 & 2012 are *very* similar
+- Maternal mortality looks like an outlier and does not seem to corerlate well
+  with any of the other variables.
+- Something looks amiss with labor_participation_male
+- Not surprising, but there are some clear regional trends in the data (e.g.
+  the bottom-most cluster of North and Central African countries).
+
+Finally, let's look at the the correlations between the variables directly:
+
+
+```r
+heatmap.2(cor(df_complete[-1]), trace="none", margins=c(13,13), main="Variable
+          correlations (original)")
+```
+
+![plot of chunk variable_correlations](figure/variable_correlations.png) 
+
+Observations:
+
+- Male and female education are highly correlated with one another, but do not
+  correlate well with any of the other variables of interest.
+- Nutrition and hunger related variables group together, as expected
+- GII is moderately correlated with these variables, including stunting.
+
+### Some more data cleaning
+
+In order to continue simplifying our dataset, let's combine some of the fields
+above that turn out to be very similar, namely:
+
+- GII 2010 & 2012
+- Stunting male & female
+- Secondary education male & female
+
+For now, let's also drop the labor participation male since it doesn't seem to
+be affected by any of the other variables.
+
+
+```r
+# combine above variables and drop original columns
+df_complete = df_complete %>% 
+    mutate(
+        mean_stunting = (mean_stunting_female + mean_stunting_male) / 2,
+        GII = (GII_2010 + GII_2012) / 2,
+        secondary_education = (secondary_education_male +
+                               secondary_education_female) / 2) %>% 
+    select(-mean_stunting_female, -mean_stunting_male, -GII_2010, -GII_2012,
+           -secondary_education_male, -secondary_education_female,
+           -labor_participation_male)
+
+# Save this dataset
+write.csv(df_complete, file='output/Stunting_clean.csv', row.names=FALSE)
+```
+
+Let's redo some of the above plots to see how things look now...
+
+
+```r
+# biplot
+plot(bpca(df_complete[-1]),
+     var.factor=.5,
+     obj.names=TRUE,
+     obj.labels=df_complete$country)
+title("Biplot (clean)")
+```
+
+![plot of chunk cleaned_data_plots](figure/cleaned_data_plots1.png) 
+
+```r
+# country and variable biclustering and heatmap
+heatmap.2(log1p(as.matrix(df_complete[-1])), 
+          trace="none", margins=c(12,8), main="Heatmap (clean)")
+```
+
+![plot of chunk cleaned_data_plots](figure/cleaned_data_plots2.png) 
+
+```r
+# variable correlations
+heatmap.2(cor(df_complete[-1]), trace="none", margins=c(13,13), main="Variable
+          correlations (clean)")
+```
+
+![plot of chunk cleaned_data_plots](figure/cleaned_data_plots3.png) 
 
 ### Mean Stunting Rate vs. Global Inequality Index
 
@@ -302,19 +388,14 @@ df = df %>% mutate(mean_stunting_all = mean_stunting_female + mean_stunting_male
 ```r
 library(ggplot2)
 
-ggplot(df, aes(GII_2012, mean_stunting_all)) + geom_point() + geom_smooth() +
-    xlab('Global Inequality Index (2012)') +
+ggplot(df_complete, aes(GII, mean_stunting)) + geom_point() + geom_smooth() +
+    xlab('Global Inequality Index') +
     ylab('Mean Stunting Rate') + 
     ggtitle('Stunting rate vs. Gender Inequality')
 ```
 
 ```
 ## geom_smooth: method="auto" and size of largest group is <1000, so using loess. Use 'method = x' to change the smoothing method.
-```
-
-```
-## Warning: Removed 10 rows containing missing values (stat_smooth).
-## Warning: Removed 10 rows containing missing values (geom_point).
 ```
 
 ![plot of chunk stunting_vs_gii](figure/stunting_vs_gii.png) 
@@ -343,16 +424,20 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] ggplot2_1.0.0        bpca_1.2-2           rgl_0.93.996        
-##  [4] scatterplot3d_0.3-35 dplyr_0.2            knitr_1.6.5         
-##  [7] rmarkdown_0.2.49     knitrBootstrap_1.0.0 vimcom.plus_1.0-0   
-## [10] setwidth_1.0-3       colorout_1.0-3      
+##  [1] gplots_2.13.0        ggplot2_1.0.0        bpca_1.2-2          
+##  [4] rgl_0.93.996         scatterplot3d_0.3-35 dplyr_0.2           
+##  [7] knitr_1.6.5          rmarkdown_0.2.49     knitrBootstrap_1.0.0
+## [10] vimcom.plus_1.0-0    setwidth_1.0-3       colorout_1.0-3      
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] assertthat_0.1   colorspace_1.2-4 digest_0.6.4     evaluate_0.5.5  
-##  [5] formatR_0.10     grid_3.1.0       gtable_0.1.2     htmltools_0.2.4 
-##  [9] labeling_0.2     magrittr_1.0.1   markdown_0.7     MASS_7.3-31     
-## [13] mime_0.1.1       munsell_0.4.2    parallel_3.1.0   plyr_1.8.1      
-## [17] proto_0.3-10     Rcpp_0.11.1      reshape2_1.4     scales_0.2.4    
-## [21] stringr_0.6.2    tools_3.1.0      yaml_2.1.11
+##  [1] assertthat_0.1     bitops_1.0-6       caTools_1.17      
+##  [4] colorspace_1.2-4   digest_0.6.4       evaluate_0.5.5    
+##  [7] formatR_0.10       gdata_2.13.3       grid_3.1.0        
+## [10] gtable_0.1.2       gtools_3.4.0       htmltools_0.2.4   
+## [13] KernSmooth_2.23-12 labeling_0.2       magrittr_1.0.1    
+## [16] markdown_0.7       MASS_7.3-31        mime_0.1.1        
+## [19] munsell_0.4.2      parallel_3.1.0     plyr_1.8.1        
+## [22] proto_0.3-10       Rcpp_0.11.1        reshape2_1.4      
+## [25] scales_0.2.4       stringr_0.6.2      tools_3.1.0       
+## [28] yaml_2.1.11
 ```
