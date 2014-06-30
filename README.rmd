@@ -171,16 +171,10 @@ rownames(df) = df$country
 region_info = read.delim('input/ISO-3166-Countries-with-Regional-Codes.csv')
 region_names = read.csv('input/georegion.csv')
 
-region_info = merge(region_info, region_names, 
-                    by.x='region.code', by.y='M49.numeric.code')
-
-# map region names to region codes
-# there must be a better way to do this...
-#levels(region_info$region.code) = region_info$Region
-
-regions = merge(df, region_info, by.x='country', by.y='name')$region.code
-#levels(regions$region.code) = regions$Region
-#regions = regions$region.code
+# add region names main dataframe
+region_info$region = region_names$Region[match(region_info$region.code,
+                                             region_names$M49.numeric.code)]
+regions = region_info$region[match(df$country, region_info$name)]
 
 # store country names separately to make it easy to work with the remaining
 # numeric predictor and outcome variables
@@ -198,9 +192,7 @@ country_names[!complete.cases(df)]
 # fields populated
 df_complete = df[complete.cases(df),]
 country_names_complete = country_names[complete.cases(df)]
-
 regions_complete = regions[complete.cases(df)]
-#levels(regions_complete) = levels(regions)[complete.cases(df)]
 ```
 
 Let's see what the dataset looks like now at this point:
@@ -228,8 +220,8 @@ library(RColorBrewer)
 
 # region colors
 region_colors = brewer.pal(length(unique(regions_complete)), "Set1")[
-                                 as.numeric(as.factor(regions_complete))]
-#levels(region_colors) = levels(regions_complete)
+                    as.numeric(as.factor((as.character(regions_complete))))]
+names(region_colors) = regions_complete
 
 # biplot of uncleaned data
 plot(bpca(df_complete),
@@ -326,6 +318,8 @@ heatmap.2(cor(df_complete), trace="none", margins=c(13,13), main="Variable
 
 ### Stunting Rate vs. Global Inequality Index
 
+* TODO: Normalize colors with earlier plots.
+
 [SVG version](figure/stunting_vs_gii.svg)
 
 ```{r stunting_vs_gii, dev=c('png', 'svg')}
@@ -334,7 +328,7 @@ library(ggplot2)
 rho = cor(df_complete$GII, df_complete$mean_stunting)
 
 ggplot(df_complete, aes(GII, mean_stunting, label=country_names_complete)) + 
-    geom_point(aes(color=region_colors)) + 
+    geom_point(aes(color=regions_complete)) + 
     geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) + 
     geom_smooth(method="lm") +
     xlab('Global Inequality Index') +
@@ -348,7 +342,7 @@ ggplot(df_complete, aes(GII, mean_stunting, label=country_names_complete)) +
 rho = cor(df_complete$secondary_education, df_complete$mean_stunting)
 
 ggplot(df_complete, aes(secondary_education, mean_stunting, label=country_names_complete)) + 
-    geom_point(aes(color=region_colors)) + 
+    geom_point(aes(color=regions_complete)) + 
     geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) + 
     geom_smooth(method="lm") +
     xlab('Rate of Population with Secondary Education or Higher') +

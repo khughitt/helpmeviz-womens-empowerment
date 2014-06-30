@@ -166,16 +166,10 @@ rownames(df) = df$country
 region_info = read.delim('input/ISO-3166-Countries-with-Regional-Codes.csv')
 region_names = read.csv('input/georegion.csv')
 
-region_info = merge(region_info, region_names, 
-                    by.x='region.code', by.y='M49.numeric.code')
-
-# map region names to region codes
-# there must be a better way to do this...
-#levels(region_info$region.code) = region_info$Region
-
-regions = merge(df, region_info, by.x='country', by.y='name')$region.code
-#levels(regions$region.code) = regions$Region
-#regions = regions$region.code
+# add region names main dataframe
+region_info$region = region_names$Region[match(region_info$region.code,
+                                             region_names$M49.numeric.code)]
+regions = region_info$region[match(df$country, region_info$name)]
 
 # store country names separately to make it easy to work with the remaining
 # numeric predictor and outcome variables
@@ -238,9 +232,7 @@ country_names[!complete.cases(df)]
 # fields populated
 df_complete = df[complete.cases(df),]
 country_names_complete = country_names[complete.cases(df)]
-
 regions_complete = regions[complete.cases(df)]
-#levels(regions_complete) = levels(regions)[complete.cases(df)]
 ```
 
 Let's see what the dataset looks like now at this point:
@@ -306,8 +298,8 @@ library(RColorBrewer)
 
 # region colors
 region_colors = brewer.pal(length(unique(regions_complete)), "Set1")[
-                                 as.numeric(as.factor(regions_complete))]
-#levels(region_colors) = levels(regions_complete)
+                    as.numeric(as.factor((as.character(regions_complete))))]
+names(region_colors) = regions_complete
 
 # biplot of uncleaned data
 plot(bpca(df_complete),
@@ -433,7 +425,7 @@ library(ggplot2)
 rho = cor(df_complete$GII, df_complete$mean_stunting)
 
 ggplot(df_complete, aes(GII, mean_stunting, label=country_names_complete)) + 
-    geom_point(aes(color=region_colors)) + 
+    geom_point(aes(color=regions_complete)) + 
     geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) + 
     geom_smooth(method="lm") +
     xlab('Global Inequality Index') +
@@ -450,7 +442,7 @@ ggplot(df_complete, aes(GII, mean_stunting, label=country_names_complete)) +
 rho = cor(df_complete$secondary_education, df_complete$mean_stunting)
 
 ggplot(df_complete, aes(secondary_education, mean_stunting, label=country_names_complete)) + 
-    geom_point(aes(color=region_colors)) + 
+    geom_point(aes(color=regions_complete)) + 
     geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) + 
     geom_smooth(method="lm") +
     xlab('Rate of Population with Secondary Education or Higher') +
@@ -485,11 +477,11 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] plyr_1.8.1           RColorBrewer_1.0-5   ggplot2_1.0.0       
-##  [4] gplots_2.13.0        bpca_1.2-2           rgl_0.93.996        
-##  [7] scatterplot3d_0.3-35 dplyr_0.2            knitr_1.6.5         
-## [10] rmarkdown_0.2.49     knitrBootstrap_1.0.0 vimcom.plus_1.0-0   
-## [13] setwidth_1.0-3       colorout_1.0-3      
+##  [1] ggplot2_1.0.0        gplots_2.13.0        RColorBrewer_1.0-5  
+##  [4] bpca_1.2-2           rgl_0.93.996         scatterplot3d_0.3-35
+##  [7] dplyr_0.2            knitr_1.6.5          rmarkdown_0.2.49    
+## [10] knitrBootstrap_1.0.0 vimcom.plus_1.0-0    setwidth_1.0-3      
+## [13] colorout_1.0-3      
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] assertthat_0.1     bitops_1.0-6       caTools_1.17      
@@ -498,7 +490,8 @@ sessionInfo()
 ## [10] gtable_0.1.2       gtools_3.4.0       htmltools_0.2.4   
 ## [13] KernSmooth_2.23-12 labeling_0.2       magrittr_1.0.1    
 ## [16] markdown_0.7       MASS_7.3-31        mime_0.1.1        
-## [19] munsell_0.4.2      parallel_3.1.0     proto_0.3-10      
-## [22] Rcpp_0.11.1        reshape2_1.4       scales_0.2.4      
-## [25] stringr_0.6.2      tools_3.1.0        yaml_2.1.11
+## [19] munsell_0.4.2      parallel_3.1.0     plyr_1.8.1        
+## [22] proto_0.3-10       Rcpp_0.11.1        reshape2_1.4      
+## [25] scales_0.2.4       stringr_0.6.2      tools_3.1.0       
+## [28] yaml_2.1.11
 ```
