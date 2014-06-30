@@ -78,13 +78,43 @@ Finally, a mapping from region codes to region names was retrieved from:
 Data preparation
 ----------------
 
-### Clean up stunting data
+### Load Gender Inequality Indices
+
+2012 HDI Rank,Name,2012 Gender Inequality Index Value,2010 Maternal Mortality
+Ratio,Adolescent Fertility Rate,2012 Seats in National Parliament (%
+female),2012 Seats in National Parliament (% female) Note,2006-2010 Population
+with at least secondary education (Female),2006-2010 Population with at least
+secondary education (Female) Note,2006-2010 Population with at least secondary
+education (Male),2006-2010 Population with at least secondary education (Male)
+Note,2011 Labour force participation rate (Female),2011 Labour force
+participation rate (Male)
 
 
 ```r
 library(dplyr)
 options(StringsAsFactors=FALSE)
 
+# Load gender inequality data
+gii_cols = c(
+    "hdi_rank", "country", "GII_2012", "maternal_mortality_ratio",
+    "adolescent_fertility_rate", "seats_parlim_female",
+    "seats_parlim_female_note", "secondary_education_female",
+    "secondary_education_female_note", "secondary_education_male",
+    "secondary_education_male_note", "labor_participation_female",
+    "labor_participation_male"
+)
+dat = tbl_df(read.csv('input/Gender_Inequality_Index.csv', col.names=gii_cols))
+
+# Drop unneeded fields
+dat = dat %>% select(-hdi_rank, -seats_parlim_female_note,
+                     -secondary_education_female_note,
+                     -secondary_education_male_note)
+```
+
+### Load Stunting data
+
+
+```r
 # Load stunting data
 stunting = tbl_df(read.csv('input/World Bank Stunting and Wasting Data, by gender.csv'))
                            
@@ -95,27 +125,32 @@ stunting = stunting %>% select(Country.Name, Country.Code, Indicator.Code,
 
 # Mean stunting for last 15 years
 values = stunting  %>% select(-Country.Name, -Country.Code, -Indicator.Code)
-stunting$Mean.Stunting = apply(values, 1, function(x) { mean(x, na.rm=T) })
+stunting$mean_stunting = apply(values, 1, function(x) { mean(x, na.rm=T) })
 
 # Most recent data point for each Country for which data is available during
 # this time period
-stunting$Most.Recent.Stunting = as.numeric(apply(values, 1, function(x) {
+stunting$most_recent_stunting = as.numeric(apply(values, 1, function(x) {
                                                  tail(x[!is.na(x)], 1) }))
 
 # Drop the individual year columns
 stunting = stunting %>% select(Country.Name, Country.Code, Indicator.Code,
-                               Mean.Stunting, Most.Recent.Stunting)
+                               mean_stunting, most_recent_stunting)
 
 # Drop Countries with no recent data
-stunting = stunting %>% filter(!is.nan(Mean.Stunting))
+stunting = stunting %>% filter(!is.nan(mean_stunting))
 
 # Male vs. Female Stunting
 male_stunting = stunting %>% filter(Indicator.Code == 'SH.STA.STNT.MA.ZS')
 female_stunting = stunting %>% filter(Indicator.Code == 'SH.STA.STNT.FE.ZS')
 
-# Save output
-write.csv(male_stunting, file='output/male_stunting.csv', row.names=FALSE)
-write.csv(female_stunting, file='output/female_stunting.csv', row.names=FALSE)
+stunting_dat = data.frame(
+    country =               male_stunting$Country.Name,
+    mean_stunting_male =    male_stunting$mean_stunting,
+    mean_stunting_female =  female_stunting$mean_stunting
+)
+
+# Add stunting data to main data frame
+dat = merge(dat, stunting_dat, by='country')
 ```
 
 ### Combined dataset
@@ -415,6 +450,8 @@ heatmap.2(cor(df_complete), trace="none", margins=c(13,13), main="Variable
 ![plot of chunk cleaned_data_plots](figure/cleaned_data_plots3.png) 
 
 ### Stunting Rate vs. Global Inequality Index
+
+* TODO: Normalize colors with earlier plots.
 
 [SVG version](figure/stunting_vs_gii.svg)
 
