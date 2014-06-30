@@ -80,18 +80,25 @@ Data preparation
 
 ### Load Gender Inequality Indices
 
-2012 HDI Rank,Name,2012 Gender Inequality Index Value,2010 Maternal Mortality
-Ratio,Adolescent Fertility Rate,2012 Seats in National Parliament (%
-female),2012 Seats in National Parliament (% female) Note,2006-2010 Population
-with at least secondary education (Female),2006-2010 Population with at least
-secondary education (Female) Note,2006-2010 Population with at least secondary
-education (Male),2006-2010 Population with at least secondary education (Male)
-Note,2011 Labour force participation rate (Female),2011 Labour force
-participation rate (Male)
-
 
 ```r
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 options(StringsAsFactors=FALSE)
 
 # Load gender inequality data
@@ -329,6 +336,14 @@ tool called a [biplot](http://en.wikipedia.org/wiki/Biplot) is used for this.
 
 ```r
 library(bpca)
+```
+
+```
+## Loading required package: scatterplot3d
+## Loading required package: rgl
+```
+
+```r
 library(RColorBrewer)
 
 # region colors
@@ -352,6 +367,20 @@ Another way to visualize these relationships is using a heatmap:
 
 ```r
 library(gplots)
+```
+
+```
+## KernSmooth 2.23 loaded
+## Copyright M. P. Wand 1997-2009
+## 
+## Attaching package: 'gplots'
+## 
+## The following object is masked from 'package:stats':
+## 
+##     lowess
+```
+
+```r
 heatmap.2(log1p(as.matrix(df_complete)), 
           RowSideColors=region_colors,
           trace="none", margins=c(12,8), 
@@ -516,19 +545,16 @@ sessionInfo()
 ## other attached packages:
 ##  [1] ggplot2_1.0.0        gplots_2.13.0        RColorBrewer_1.0-5  
 ##  [4] bpca_1.2-2           rgl_0.93.996         scatterplot3d_0.3-35
-##  [7] dplyr_0.2            knitr_1.6.5          rmarkdown_0.2.49    
-## [10] knitrBootstrap_1.0.0 vimcom.plus_1.0-0    setwidth_1.0-3      
-## [13] colorout_1.0-3      
+##  [7] dplyr_0.2            knitr_1.6.5          vimcom.plus_1.0-0   
+## [10] setwidth_1.0-3       colorout_1.0-3      
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] assertthat_0.1     bitops_1.0-6       caTools_1.17      
 ##  [4] colorspace_1.2-4   digest_0.6.4       evaluate_0.5.5    
 ##  [7] formatR_0.10       gdata_2.13.3       grid_3.1.0        
-## [10] gtable_0.1.2       gtools_3.4.0       htmltools_0.2.4   
-## [13] KernSmooth_2.23-12 labeling_0.2       magrittr_1.0.1    
-## [16] markdown_0.7       MASS_7.3-31        mime_0.1.1        
-## [19] munsell_0.4.2      parallel_3.1.0     plyr_1.8.1        
-## [22] proto_0.3-10       Rcpp_0.11.1        reshape2_1.4      
-## [25] scales_0.2.4       stringr_0.6.2      tools_3.1.0       
-## [28] yaml_2.1.11
+## [10] gtable_0.1.2       gtools_3.4.0       KernSmooth_2.23-12
+## [13] labeling_0.2       magrittr_1.0.1     MASS_7.3-31       
+## [16] munsell_0.4.2      parallel_3.1.0     plyr_1.8.1        
+## [19] proto_0.3-10       Rcpp_0.11.1        reshape2_1.4      
+## [22] scales_0.2.4       stringr_0.6.2      tools_3.1.0
 ```
