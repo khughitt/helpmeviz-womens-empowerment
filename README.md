@@ -12,8 +12,10 @@ output:
 Bread for the World Hackathon: Women's Empowerment & Nutrition
 ==============================================================
 
-Overview
---------
+Introduction
+------------
+
+### Overview
 
 This analysis was put together for the [HelpMeViz](http://helpmeviz.com/)
 [hackathon on Women's Empowerment &
@@ -44,6 +46,22 @@ For more information on the goals of the visualization challenge, see:
 * [HelpMeViz: Women's Empowerment &
   Nutrition](http://helpmeviz.com/2014/06/28/hackathon-womens-empowerment-nutrition/)
 * [Bread for the World](http://www.bread.org/institute/)
+
+### Reading this document
+
+This document and the analysis herein was generated using the [R programming
+language](http://www.r-project.org/) and the [knitr](http://yihui.name/knitr/)
+report generation package.
+
+If you are interested in understanding more about the code in this analysis, or
+how the output was generated, below are a few tutorials to get you started:
+
+1. [Getting started with R](https://support.rstudio.com/hc/en-us/articles/201141096-Getting-Started-with-R)
+2. [Introduction to dplyr](http://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html)
+3. [Basic introduction to ggplot2](http://www.ancienteco.com/2012/03/basic-introduction-to-ggplot2.html)
+4. [Markdown basics](https://daringfireball.net/projects/markdown/basics)
+5. [Knitr in a knutshell](http://kbroman.github.io/knitr_knutshell/)
+
 
 Data Sources
 ------------
@@ -83,22 +101,6 @@ Data preparation
 
 ```r
 library(dplyr)
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-## 
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 options(StringsAsFactors=FALSE)
 
 # Load gender inequality data
@@ -116,6 +118,76 @@ dat = tbl_df(read.csv('input/Gender_Inequality_Index.csv', col.names=gii_cols))
 dat = dat %>% select(-hdi_rank, -seats_parlim_female_note,
                      -secondary_education_female_note,
                      -secondary_education_male_note)
+```
+
+### Load International Food Policy Research Institute (IFPRI) data
+
+
+```r
+# Data is in a "long" format (http://www.r-bloggers.com/reshape-package-in-r-long-data-format-to-wide-back-to-long-again/)
+# For now, we will just extract a few fields of interest and save them as
+# separate columns. Eventually it may be worthwhile revisiting this dataset
+# and incorporating other time points.
+ifpri = tbl_df(read.csv('input/IFPRI_Global_Hunger_Index_data_clean.csv'))
+ifpri$Country = as.character(ifpri$Country)
+
+# Normalize country names
+# TODO: Both of these should probably be mapped to the ISO-3166 naming
+# standards
+country_mapping = data.frame(t(matrix(c(
+    'Bolivia',              'Bolivia (Plurinational State of)',
+    'Bosnia & Herzegovina', 'Bosnia and Herzegovina',
+    'Central African Rep.', 'Central African Republic',
+    'Congo, Dem. Rep.',     'Congo (Democratic Republic of the)',
+    'Congo, Rep.',          'Congo',
+    'Egypt, Arab Rep.',     'Egypt',
+    'Gambia, The',          'Gambia',
+    'Iran, Islamic Rep.',   'Iran (Islamic Republic of)',
+    'Kyrgyz Republic',      'Kyrgyzstan',
+    'Lao PDR',              'Lao People\'s Democratic Republic',
+    'Macedonia, FYR',       'The former Yugoslav Republic of Macedonia',
+    'Moldova',              'Moldova (Republic of)',
+    'North Korea',          'Korea (Democratic People\'s Rep. of)',
+    'Slovak Republic',      'Slovakia',
+    'Sudan (former)',       'Sudan',
+    'Tanzania',             'Tanzania (United Republic of)',
+    'Trinidad & Tobago',    'Trinidad and Tobago',
+    'Venezuela, RB',        'Venezuela (Bolivarian Republic of)',
+    'Vietnam',              'Viet Nam',
+    'Yemen, Rep.',          'Yemen'    
+), nrow=2)))
+
+names(country_mapping) = c('ifpri', 'gii')
+           
+# Replace IFPRI country names
+diffnames = ifpri$Country %in% country_mapping$ifpri
+
+ifpri[diffnames,'Country'] = 
+    as.character(country_mapping$gii[match(ifpri[diffnames,'Country'], 
+                                           country_mapping$ifpri)])
+
+# 2013 Hunger index
+ifpri_dat = ifpri %>% 
+    filter(Indicator == '2013 Global Hunger Index' & Year == 2013) %>%
+    select(Country, Data)
+colnames(ifpri_dat) = c('country', 'ifpri_hunger_index')
+
+# Under-five mortality rate
+ifpri_dat$ifpri_under5_mortality = (ifpri %>% 
+    filter(Indicator == 'Under-five Mortality rate  (%)' & Year == 2011))$Data
+
+# Prevalence of undernourishment in the population
+ifpri_dat$ifpri_undernourishment = (ifpri %>%
+    filter(Indicator == 'Prevalence of undernourishment in the population  (%)'
+         & Year == '2010-12'))$Data
+
+# Prevalence of underweight in children under five years
+ifpri_dat$ifpri_under5_underweight = (ifpri %>%
+    filter(Indicator == 'Prevalence of underweight in children under five years  (%)'
+         & Year == '2008-12'))$Data
+
+# Add to main dataset
+dat = merge(dat, ifpri_dat, by='country')
 ```
 
 ### Load Stunting data
@@ -336,14 +408,6 @@ tool called a [biplot](http://en.wikipedia.org/wiki/Biplot) is used for this.
 
 ```r
 library(bpca)
-```
-
-```
-## Loading required package: scatterplot3d
-## Loading required package: rgl
-```
-
-```r
 library(RColorBrewer)
 
 # region colors
@@ -367,20 +431,6 @@ Another way to visualize these relationships is using a heatmap:
 
 ```r
 library(gplots)
-```
-
-```
-## KernSmooth 2.23 loaded
-## Copyright M. P. Wand 1997-2009
-## 
-## Attaching package: 'gplots'
-## 
-## The following object is masked from 'package:stats':
-## 
-##     lowess
-```
-
-```r
 heatmap.2(log1p(as.matrix(df_complete)), 
           RowSideColors=region_colors,
           trace="none", margins=c(12,8), 
@@ -545,16 +595,19 @@ sessionInfo()
 ## other attached packages:
 ##  [1] ggplot2_1.0.0        gplots_2.13.0        RColorBrewer_1.0-5  
 ##  [4] bpca_1.2-2           rgl_0.93.996         scatterplot3d_0.3-35
-##  [7] dplyr_0.2            knitr_1.6.5          vimcom.plus_1.0-0   
-## [10] setwidth_1.0-3       colorout_1.0-3      
+##  [7] knitr_1.6.5          rmarkdown_0.2.49     knitrBootstrap_1.0.0
+## [10] dplyr_0.2            vimcom.plus_1.0-0    setwidth_1.0-3      
+## [13] colorout_1.0-3      
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] assertthat_0.1     bitops_1.0-6       caTools_1.17      
 ##  [4] colorspace_1.2-4   digest_0.6.4       evaluate_0.5.5    
 ##  [7] formatR_0.10       gdata_2.13.3       grid_3.1.0        
-## [10] gtable_0.1.2       gtools_3.4.0       KernSmooth_2.23-12
-## [13] labeling_0.2       magrittr_1.0.1     MASS_7.3-31       
-## [16] munsell_0.4.2      parallel_3.1.0     plyr_1.8.1        
-## [19] proto_0.3-10       Rcpp_0.11.1        reshape2_1.4      
-## [22] scales_0.2.4       stringr_0.6.2      tools_3.1.0
+## [10] gtable_0.1.2       gtools_3.4.0       htmltools_0.2.4   
+## [13] KernSmooth_2.23-12 labeling_0.2       magrittr_1.0.1    
+## [16] markdown_0.7       MASS_7.3-31        mime_0.1.1        
+## [19] munsell_0.4.2      parallel_3.1.0     plyr_1.8.1        
+## [22] proto_0.3-10       Rcpp_0.11.1        reshape2_1.4      
+## [25] scales_0.2.4       stringr_0.6.2      tools_3.1.0       
+## [28] yaml_2.1.11
 ```
