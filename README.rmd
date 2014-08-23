@@ -86,6 +86,8 @@ The data used for this analysis comes from several sources:
    Children (2014)](http://www.unicef.org/sowc2014/numbers/#statistics)
 6. [GII: Gender Inequality Index over
    time](https://data.undp.org/dataset/GII-Gender-Inequality-Index-value/bh77-rzbn)
+7. [The World Bank: Child Malnutrition
+   Estimates](http://data.worldbank.org/child-malnutrition)
 
 Some relevant tables from each of the above reports have been compiled into CSV
 and excel spreadsheets and made available for the hackathon. The CSV versions
@@ -102,6 +104,22 @@ Finally, a mapping from region codes to region names was retrieved from:
 Data preparation
 ----------------
 
+### Overview
+
+During the Hackathon, the mean stunting rates for male and female were combined
+with predictor variables from other datasets into a single file to make it
+easier to work with. The most recent version of this file is the called
+`Stunting4.csv` and can be found in the `input/` directory. To make things as
+transparent as possible, the same dataset is recreated below using the orignal
+datasources.
+
+Other changes from the original Hackathon dataset:
+
+1. The `GII 2010` indicator has been dropped (it is very similar to the 2012
+   values and doesn't likely tell us anything new)
+2. Some additional data fields have been included, per follow-up discussions
+   with The Bread for the World Institute
+
 ### Load Gender Inequality Indices
 
 ```{r load_gii_data}
@@ -117,10 +135,11 @@ gii_cols = c(
     "secondary_education_male_note", "labor_participation_female",
     "labor_participation_male"
 )
-dat = tbl_df(read.csv('input/Gender_Inequality_Index.csv', col.names=gii_cols))
+df = tbl_df(read.csv('input/Gender_Inequality_Index.csv', col.names=gii_cols,
+                     na.strings='..'))
 
 # Drop unneeded fields
-dat = dat %>% select(-hdi_rank, -seats_parlim_female_note,
+df = df %>% select(-hdi_rank, -seats_parlim_female_note,
                      -secondary_education_female_note,
                      -secondary_education_male_note)
 ```
@@ -158,26 +177,26 @@ country_mapping = data.frame(t(matrix(c(
     'Trinidad & Tobago',    'Trinidad and Tobago',
     'Venezuela, RB',        'Venezuela (Bolivarian Republic of)',
     'Vietnam',              'Viet Nam',
-    'Yemen, Rep.',          'Yemen'    
+    'Yemen, Rep.',          'Yemen'
 ), nrow=2)))
 
 names(country_mapping) = c('ifpri', 'gii')
-           
+
 # Replace IFPRI country names
 diffnames = ifpri$Country %in% country_mapping$ifpri
 
-ifpri[diffnames,'Country'] = 
-    as.character(country_mapping$gii[match(ifpri[diffnames,'Country'], 
+ifpri[diffnames,'Country'] =
+    as.character(country_mapping$gii[match(ifpri[diffnames,'Country'],
                                            country_mapping$ifpri)])
 
 # 2013 Hunger index
-ifpri_dat = ifpri %>% 
+ifpri_dat = ifpri %>%
     filter(Indicator == '2013 Global Hunger Index' & Year == 2013) %>%
     select(Country, Data)
 colnames(ifpri_dat) = c('country', 'ifpri_hunger_index')
 
 # Under-five mortality rate
-ifpri_dat$ifpri_under5_mortality = (ifpri %>% 
+ifpri_dat$ifpri_under5_mortality = (ifpri %>%
     filter(Indicator == 'Under-five Mortality rate  (%)' & Year == 2011))$Data
 
 # Prevalence of undernourishment in the population
@@ -191,59 +210,55 @@ ifpri_dat$ifpri_under5_underweight = (ifpri %>%
          & Year == '2008-12'))$Data
 
 # Add to main dataset
-dat = merge(dat, ifpri_dat, by='country')
+df = merge(df, ifpri_dat, by='country')
 ```
 
-### Load Stunting data
+### Load World Bank Stunting and Malnutrition data
 
-```{r load_stunting_data}
-# Load stunting data
-stunting = tbl_df(read.csv('input/World Bank Stunting and Wasting Data, by gender.csv'))
-                           
+```{r load_world_bank_data}
+# Load world bank data
+world_bank = tbl_df(read.csv('input/World Bank Stunting and Wasting Data, by gender.csv'))
+
 # Grab data for the last 15 years
-stunting = stunting %>% select(Country.Name, Country.Code, Indicator.Code, 
-                               X2000, X2001, X2002, X2003, X2004, X2005, X2006,
-                               X2007, X2008, X2009, X2010, X2011, X2012, X2013)
+world_bank = world_bank %>% select(Country.Name, Country.Code, Indicator.Code,
+                                   X2000, X2001, X2002, X2003, X2004, X2005, X2006,
+                                   X2007, X2008, X2009, X2010, X2011, X2012, X2013)
 
 # Mean stunting for last 15 years
-values = stunting  %>% select(-Country.Name, -Country.Code, -Indicator.Code)
-stunting$mean_stunting = apply(values, 1, function(x) { mean(x, na.rm=T) })
+values = world_bank  %>% select(-Country.Name, -Country.Code, -Indicator.Code)
+world_bank$mean_stunting = apply(values, 1, function(x) { mean(x, na.rm=T) })
 
 # Most recent data point for each Country for which data is available during
 # this time period
-stunting$most_recent_stunting = as.numeric(apply(values, 1, function(x) {
+world_bank$most_recent_stunting = as.numeric(apply(values, 1, function(x) {
                                                  tail(x[!is.na(x)], 1) }))
 
 # Drop the individual year columns
-stunting = stunting %>% select(Country.Name, Country.Code, Indicator.Code,
+world_bank = world_bank %>% select(Country.Name, Country.Code, Indicator.Code,
                                mean_stunting, most_recent_stunting)
 
 # Drop Countries with no recent data
-stunting = stunting %>% filter(!is.nan(mean_stunting))
+world_bank = world_bank %>% filter(!is.nan(mean_stunting))
 
 # Male vs. Female Stunting
-male_stunting = stunting %>% filter(Indicator.Code == 'SH.STA.STNT.MA.ZS')
-female_stunting = stunting %>% filter(Indicator.Code == 'SH.STA.STNT.FE.ZS')
+male_stunting = world_bank %>% filter(Indicator.Code == 'SH.STA.STNT.MA.ZS')
+female_stunting = world_bank %>% filter(Indicator.Code == 'SH.STA.STNT.FE.ZS')
 
-stunting_dat = data.frame(
+world_bank_dat = data.frame(
     country =               male_stunting$Country.Name,
     mean_stunting_male =    male_stunting$mean_stunting,
     mean_stunting_female =  female_stunting$mean_stunting
 )
 
-# Add stunting data to main data frame
-dat = merge(dat, stunting_dat, by='country')
+# Add world bank data to main data frame
+df = merge(df, world_bank_dat, by='country')
 ```
 
 ### Combined dataset
 
-The mean stunting rates for male and female from above were combined with
-predictor variables from other datasets into a single file to make it easier to
-visualize. Let's now load that complete dataset and see what we can find.
-
 #### Data fields
 
-The fields contained in the dataset `Stunting4.csv` include:
+The combined dataset now contains:
 
 * Country name
 * 2012 Seats in National Parliament (% female)
@@ -253,7 +268,6 @@ The fields contained in the dataset `Stunting4.csv` include:
 * 2006-2010 Population with at least secondary education (Male)
 * 2011 Labour force participation rate (Female)
 * 2011 Labour force participation rate (Male)
-* 2010 Global Inequality Index (GII)
 * 2012 Global Inequality Index (GII)
 * 2013 Global Hunger Index (IFPRI)
 * 2011 Under-five Mortality rate (IFPRI)
@@ -263,19 +277,6 @@ The fields contained in the dataset `Stunting4.csv` include:
 * Percent children with stunting (Male)
 
 ```{r load_combined_dataset}
-
-# load cleaned data
-df = tbl_df(read.csv('input/Stunting4.csv'))
-
-# let's make names easy to type..
-colnames(df) = c("country", "seats_parlim_female", "maternal_mortality_ratio",
-                 "adolescent_fertility_rate", "secondary_education_female",
-                 "secondary_education_male", "labor_participation_female",
-                 "labor_participation_male", "GII_2010", "GII_2012",
-                 "ifpri_hunger_index", "ifpri_under5_mortality",
-                 "ifpri_undernourishment", "ifpri_under5_underweight",
-                 "mean_stunting_female", "mean_stunting_male")
-
 # more sensible row names
 rownames(df) = df$country
 
@@ -312,7 +313,7 @@ Let's see what the dataset looks like now at this point:
 ```{r data_preview, results='asis'}
 kable(df_complete[1:5,2:5])
 kable(df_complete[1:5,6:10])
-kable(df_complete[1:5,11:15])
+kable(df_complete[1:5,11:14])
 ```
 
 Visualization
@@ -348,15 +349,14 @@ Another way to visualize these relationships is using a heatmap:
 
 ```{r heatmap_orig}
 library(gplots)
-heatmap.2(log1p(as.matrix(df_complete)), 
+heatmap.2(log1p(as.matrix(df_complete)),
           RowSideColors=region_colors,
-          trace="none", margins=c(12,8), 
+          trace="none", margins=c(12,8),
           xlab="Measure", ylab="Country", main="Heatmap (original)")
 ```
 
 A few interesting things to note here:
 
-- GII 2010 & 2012 are *very* similar
 - Maternal mortality looks like an outlier and does not seem to corerlate well
   with any of the other variables.
 - Something looks amiss with labor_participation_male
@@ -382,7 +382,6 @@ Observations:
 In order to continue simplifying our dataset, let's combine some of the fields
 above that turn out to be very similar, namely:
 
-- GII 2010 & 2012
 - Stunting male & female
 - Secondary education male & female
 
@@ -391,13 +390,12 @@ be affected by any of the other variables.
 
 ```{r combine_params}
 # combine above variables and drop original columns
-df_complete = df_complete %>% 
+df_complete = df_complete %>%
     mutate(
         mean_stunting = (mean_stunting_female + mean_stunting_male) / 2,
-        GII = (GII_2010 + GII_2012) / 2,
         secondary_education = (secondary_education_male +
-                               secondary_education_female) / 2) %>% 
-    select(-mean_stunting_female, -mean_stunting_male, -GII_2010, -GII_2012,
+                               secondary_education_female) / 2) %>%
+    select(-mean_stunting_female, -mean_stunting_male,
            -secondary_education_male, -secondary_education_female,
            -labor_participation_male)
 row.names(df_complete) = country_names_complete
@@ -418,9 +416,9 @@ plot(bpca(df_complete),
 title("Biplot (clean)")
 
 # country and variable biclustering and heatmap
-heatmap.2(log1p(as.matrix(df_complete)), 
+heatmap.2(log1p(as.matrix(df_complete)),
           RowSideColors=region_colors,
-          trace="none", margins=c(12,8), 
+          trace="none", margins=c(12,8),
           xlab="Measure", ylab="Country", main="Heatmap (clean)")
 
 # variable correlations
@@ -437,14 +435,14 @@ heatmap.2(cor(df_complete), trace="none", margins=c(13,13), main="Variable
 ```{r stunting_vs_gii, dev=c('png', 'svg')}
 library(ggplot2)
 
-rho = cor(df_complete$GII, df_complete$mean_stunting)
+rho = cor(df_complete$GII_2012, df_complete$mean_stunting)
 
-ggplot(df_complete, aes(GII, mean_stunting, label=country_names_complete)) + 
-    geom_point(aes(color=regions_complete)) + 
-    geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) + 
+ggplot(df_complete, aes(GII_2012, mean_stunting, label=country_names_complete)) +
+    geom_point(aes(color=regions_complete)) +
+    geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) +
     geom_smooth(method="lm") +
     xlab('Global Inequality Index') +
-    ylab('Mean Stunting Rate') + 
+    ylab('Mean Stunting Rate') +
     ggtitle(sprintf('Stunting rate vs. Gender Inequality (cor=%0.2f)', rho))
 ```
 
@@ -453,13 +451,13 @@ ggplot(df_complete, aes(GII, mean_stunting, label=country_names_complete)) +
 ```{r stunting_vs_education}
 rho = cor(df_complete$secondary_education, df_complete$mean_stunting)
 
-ggplot(df_complete, aes(secondary_education, mean_stunting, label=country_names_complete)) + 
-    geom_point(aes(color=regions_complete)) + 
-    geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) + 
+ggplot(df_complete, aes(secondary_education, mean_stunting, label=country_names_complete)) +
+    geom_point(aes(color=regions_complete)) +
+    geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) +
     geom_smooth(method="lm") +
     xlab('Rate of Population with Secondary Education or Higher') +
-    ylab('Mean Stunting Rate') + 
-    ggtitle(sprintf('Stunting rate vs. Rate of Population with Secondary Education or 
+    ylab('Mean Stunting Rate') +
+    ggtitle(sprintf('Stunting rate vs. Rate of Population with Secondary Education or
              Higher (cor=%0.2f)', rho))
 
 ```
