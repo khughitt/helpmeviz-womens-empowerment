@@ -224,30 +224,37 @@ world_bank = world_bank %>% select(Country.Name, Country.Code, Indicator.Code,
                                    X2000, X2001, X2002, X2003, X2004, X2005, X2006,
                                    X2007, X2008, X2009, X2010, X2011, X2012, X2013)
 
-# Mean stunting for last 15 years
-values = world_bank  %>% select(-Country.Name, -Country.Code, -Indicator.Code)
-world_bank$mean_stunting = apply(values, 1, function(x) { mean(x, na.rm=T) })
+# Compute averages of each indicator for past 15 years
+averages = world_bank %>% select(-Country.Name, -Country.Code, -Indicator.Code)
+world_bank$mean = apply(averages, 1, function(x) { mean(x, na.rm=T) })
 
 # Most recent data point for each Country for which data is available during
 # this time period
-world_bank$most_recent_stunting = as.numeric(apply(values, 1, function(x) {
-                                                 tail(x[!is.na(x)], 1) }))
+world_bank$most_recent = as.numeric(apply(world_bank_stunting, 1, function(x) {
+                                        tail(x[!is.na(x)], 1)
+                                    }))
 
 # Drop the individual year columns
 world_bank = world_bank %>% select(Country.Name, Country.Code, Indicator.Code,
-                               mean_stunting, most_recent_stunting)
+                                   mean, most_recent)
 
 # Drop Countries with no recent data
-world_bank = world_bank %>% filter(!is.nan(mean_stunting))
+world_bank = world_bank %>% filter(!is.nan(mean))
 
-# Male vs. Female Stunting
+# Male vs. Female Stunting (height)
 male_stunting = world_bank %>% filter(Indicator.Code == 'SH.STA.STNT.MA.ZS')
 female_stunting = world_bank %>% filter(Indicator.Code == 'SH.STA.STNT.FE.ZS')
 
+# Male vs. Female Malnutrition (weight)
+male_malnutrition = world_bank %>% filter(Indicator.Code == 'SH.STA.MALN.MA.ZS')
+female_malnutrition = world_bank %>% filter(Indicator.Code == 'SH.STA.MALN.FE.ZS')
+
 world_bank_dat = data.frame(
-    country =               male_stunting$Country.Name,
-    mean_stunting_male =    male_stunting$mean_stunting,
-    mean_stunting_female =  female_stunting$mean_stunting
+    country                  = male_stunting$Country.Name,
+    mean_stunting_male       = male_stunting$mean,
+    mean_stunting_female     = female_stunting$mean,
+    mean_malnutrition_male   = male_malnutrition$mean,
+    mean_malnutrition_female = female_malnutrition$mean
 )
 
 # Add world bank data to main data frame
@@ -392,10 +399,12 @@ be affected by any of the other variables.
 # combine above variables and drop original columns
 df_complete = df_complete %>%
     mutate(
-        mean_stunting = (mean_stunting_female + mean_stunting_male) / 2,
+        mean_stunting     = (mean_stunting_female + mean_stunting_male) / 2,
+        mean_malnutrition = (mean_malnutrition_female + mean_malnutrition_male) / 2,
         secondary_education = (secondary_education_male +
                                secondary_education_female) / 2) %>%
     select(-mean_stunting_female, -mean_stunting_male,
+           -mean_malnutrition_female, -mean_malnutrition_male,
            -secondary_education_male, -secondary_education_female,
            -labor_participation_male)
 row.names(df_complete) = country_names_complete
@@ -444,6 +453,22 @@ ggplot(df_complete, aes(GII_2012, mean_stunting, label=country_names_complete)) 
     xlab('Global Inequality Index') +
     ylab('Mean Stunting Rate') +
     ggtitle(sprintf('Stunting rate vs. Gender Inequality (cor=%0.2f)', rho))
+```
+
+### Malnutrition Rate vs. Global Inequality Index
+
+[SVG version](figure/malnutrition_vs_gii.svg)
+
+```{r malnutrition_vs_gii, dev=c('png', 'svg')}
+rho = cor(df_complete$GII_2012, df_complete$mean_malnutrition)
+
+ggplot(df_complete, aes(GII_2012, mean_malnutrition, label=country_names_complete)) +
+    geom_point(aes(color=regions_complete)) +
+    geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) +
+    geom_smooth(method="lm") +
+    xlab('Global Inequality Index') +
+    ylab('Mean Malnutrition Rate') +
+    ggtitle(sprintf('Malnutrition rate vs. Gender Inequality (cor=%0.2f)', rho))
 ```
 
 ### Stunting vs. Secondary Education
