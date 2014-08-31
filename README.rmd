@@ -578,6 +578,21 @@ ggplot(df_complete, aes(secondary_education, mean_stunting, label=country_names_
 
 ```
 
+### Married by age 18 vs. IFPRI hunger index
+
+```{r married_by_18_vs_hunger_index}
+rho = cor(df_complete$married_by_18_rate, df_complete$ifpri_hunger_index)
+
+ggplot(df_complete, aes(married_by_18_rate, ifpri_hunger_index, label=country_names_complete)) +
+    geom_point(aes(color=regions_complete)) +
+    geom_text(aes(label=country_names_complete, hjust=-0.2, vjust=-0.2, size=0.4)) +
+    geom_smooth(method="lm") +
+    xlab('Women who were first married by age 18 (% women, age 20-24)') +
+    ylab('IFPRI global hunger index') +
+    ggtitle(sprintf('IFPRI global hunger index vs. marriage by 18 (cor=%0.2f)', rho))
+
+```
+
 System Information
 ------------------
 
