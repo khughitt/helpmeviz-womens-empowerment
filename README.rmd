@@ -129,17 +129,17 @@ options(StringsAsFactors=FALSE)
 # Load gender inequality data
 gii_cols = c(
     "hdi_rank", "country", "GII_2012", "maternal_mortality_ratio",
-    "adolescent_fertility_rate", "seats_parlim_female",
+    "adolescent_fertility_rate_gii", "seats_parlim_female_gii",
     "seats_parlim_female_note", "secondary_education_female",
     "secondary_education_female_note", "secondary_education_male",
-    "secondary_education_male_note", "labor_participation_female",
-    "labor_participation_male"
+    "secondary_education_male_note", "labor_participation_female_gii",
+    "labor_participation_male_gii"
 )
-df = tbl_df(read.csv('input/Gender_Inequality_Index.csv', col.names=gii_cols,
+dat = tbl_df(read.csv('input/Gender_Inequality_Index.csv', col.names=gii_cols,
                      na.strings='..'))
 
 # Drop unneeded fields
-df = df %>% select(-hdi_rank, -seats_parlim_female_note,
+dat = dat %>% select(-hdi_rank, -seats_parlim_female_note,
                      -secondary_education_female_note,
                      -secondary_education_male_note)
 ```
@@ -210,46 +210,46 @@ ifpri_dat$ifpri_under5_underweight = (ifpri %>%
          & Year == '2008-12'))$Data
 
 # Add to main dataset
-df = merge(df, ifpri_dat, by='country')
+dat = merge(dat, ifpri_dat, by='country')
 ```
 
 ### Load World Bank Stunting and Malnutrition data
 
-```{r load_world_bank_data}
+```{r load_world_bank_nutrition_data}
 # Load world bank data
-world_bank = tbl_df(read.csv('input/World Bank Stunting and Wasting Data, by gender.csv'))
+wb_nutrition = tbl_df(read.csv('input/World Bank Stunting and Wasting Data, by gender.csv'))
 
 # Grab data for the last 15 years
-world_bank = world_bank %>% select(Country.Name, Country.Code, Indicator.Code,
-                                   X2000, X2001, X2002, X2003, X2004, X2005, X2006,
-                                   X2007, X2008, X2009, X2010, X2011, X2012, X2013)
+wb_nutrition = wb_nutrition %>% select(Country.Name, Country.Code, 
+                                       Indicator.Code, X2000, X2001, X2002, 
+                                       X2003, X2004, X2005, X2006,   X2007, 
+                                       X2008, X2009, X2010, X2011, X2012, X2013)
 
 # Compute averages of each indicator for past 15 years
-averages = world_bank %>% select(-Country.Name, -Country.Code, -Indicator.Code)
-world_bank$mean = apply(averages, 1, function(x) { mean(x, na.rm=T) })
+values = wb_nutrition %>% select(-Country.Name, -Country.Code, -Indicator.Code)
+wb_nutrition$mean = apply(values, 1, function(x) { mean(x, na.rm=T) })
+
+# Drop Countries with no recent data
+wb_nutrition = wb_nutrition %>% filter(!is.nan(mean))
 
 # Most recent data point for each Country for which data is available during
 # this time period
-world_bank$most_recent = as.numeric(apply(world_bank_stunting, 1, function(x) {
-                                        tail(x[!is.na(x)], 1)
-                                    }))
+wb_nutrition$most_recent = as.numeric(apply(wb_nutrition %>% select(-mean), 1, 
+                                        function(x) { tail(x[!is.na(x)], 1) }))
 
 # Drop the individual year columns
-world_bank = world_bank %>% select(Country.Name, Country.Code, Indicator.Code,
-                                   mean, most_recent)
-
-# Drop Countries with no recent data
-world_bank = world_bank %>% filter(!is.nan(mean))
+wb_nutrition = wb_nutrition %>% select(Country.Name, Country.Code, 
+                                       Indicator.Code, mean, most_recent)
 
 # Male vs. Female Stunting (height)
-male_stunting = world_bank %>% filter(Indicator.Code == 'SH.STA.STNT.MA.ZS')
-female_stunting = world_bank %>% filter(Indicator.Code == 'SH.STA.STNT.FE.ZS')
+male_stunting = wb_nutrition %>% filter(Indicator.Code == 'SH.STA.STNT.MA.ZS')
+female_stunting = wb_nutrition %>% filter(Indicator.Code == 'SH.STA.STNT.FE.ZS')
 
 # Male vs. Female Malnutrition (weight)
-male_malnutrition = world_bank %>% filter(Indicator.Code == 'SH.STA.MALN.MA.ZS')
-female_malnutrition = world_bank %>% filter(Indicator.Code == 'SH.STA.MALN.FE.ZS')
+male_malnutrition = wb_nutrition %>% filter(Indicator.Code == 'SH.STA.MALN.MA.ZS')
+female_malnutrition = wb_nutrition %>% filter(Indicator.Code == 'SH.STA.MALN.FE.ZS')
 
-world_bank_dat = data.frame(
+world_bank_nutrition_dat = data.frame(
     country                  = male_stunting$Country.Name,
     mean_stunting_male       = male_stunting$mean,
     mean_stunting_female     = female_stunting$mean,
@@ -258,7 +258,98 @@ world_bank_dat = data.frame(
 )
 
 # Add world bank data to main data frame
-df = merge(df, world_bank_dat, by='country')
+dat = merge(dat, world_bank_nutrition_dat, by='country')
+```
+
+### Load World Bank Gender Data
+
+Next, we will load some indicators relating to women's status in various
+countries. The variables we will use are:
+
+
+**Economic**
+
+- Labour force participation rates for 15-24, female (% ages 15-24) (national estimate)
+- Labour force participation rates for 15-24, male (% ages 15-24) (national estimate)
+- Labour force participation rates for 15-24, total (% of ages 15-24) (modeled ILO estimate)
+- Labour force participation rates for 15-24, total (% of ages 15-24) (national estimate)
+- Ratio of female to male labor force participation rate (%) (modeled ILO estimate)
+ 
+**Education**
+
+- Progression to secondary school, female (%)
+- Progression to secondary school, male (%)
+- Ratio of female to male secondary enrollment (%)
+ 
+**Health**
+- Contraceptive prevalence (% of women ages 15-49)
+- Female adults with HIV (% of population ages 15+ with HIV)
+ 
+**Human Rights**
+- Proportion of women aged 15-49 subjected to physical or sexual violence in the last 12 months by an intimate partner (%)
+- Women who were first married by age 18 (% of women ages 20-24)
+- Adolescent fertility rate (births per 1,000 women ages 15-19)
+
+```{r load_world_bank_additional_fields}
+# Load world bank data
+wb_gender = tbl_df(read.csv('input/World Bank Gender Stat Indicators (1990-2013).csv'))
+
+# Grab data for the last 15 years
+wb_gender = wb_gender %>% select(Country.Name,
+                                 Indicator.Name, X2000, X2001, X2002, 
+                                 X2003, X2004, X2005, X2006,   X2007, 
+                                 X2008, X2009, X2010, X2011, X2012, X2013)
+
+# Compute averages of each indicator for past 15 years
+values = wb_gender %>% select(-Country.Name, -Indicator.Name)
+wb_gender$mean = apply(values, 1, function(x) { mean(x, na.rm=T) })
+
+# Drop Countries with no recent data
+#wb_gender = wb_gender %>% filter(!is.nan(mean))
+
+# Drop the individual year columns
+wb_gender = wb_gender %>% select(Country.Name, Indicator.Name, mean)
+
+# Add gender variables to the main dataframe
+labor_participation_female    = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, female (% ages 15-24) (national estimate)')
+labor_participation_male      = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, male (% ages 15-24) (national estimate)')
+labor_participation_total_ilo = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, total (% of ages 15-24) (modeled ILO estimate)')
+labor_participation_total_nat = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, total (% of ages 15-24) (national estimate)')
+labor_participation_ratio_ilo = wb_gender %>% filter(Indicator.Name == 'Ratio of female to male labor force participation rate (%) (modeled ILO estimate)')
+secondary_school_female       = wb_gender %>% filter(Indicator.Name == 'Progression to secondary school, female (%)')
+secondary_school_male         = wb_gender %>% filter(Indicator.Name == 'Progression to secondary school, male (%)')
+secondary_school_female_ratio = wb_gender %>% filter(Indicator.Name == 'Ratio of female to male secondary enrollment (%)')
+contraceptive_prevalence      = wb_gender %>% filter(Indicator.Name == 'Contraceptive prevalence (% of women ages 15-49)')
+hiv_rate_female               = wb_gender %>% filter(Indicator.Name == 'Female adults with HIV (% of population ages 15+ with HIV)')
+violence_by_partner           = wb_gender %>% filter(Indicator.Name == 'Proportion of women aged 15-49 subjected to physical or sexual violence in the last 12 months by an intimate partner (%)')
+married_by_18_rate            = wb_gender %>% filter(Indicator.Name == 'Women who were first married by age 18 (% of women ages 20-24)')
+adolescent_fertility_rate     = wb_gender %>% filter(Indicator.Name == 'Adolescent fertility rate (births per 1,000 women ages 15-19)')
+
+world_bank_gender_dat = data.frame(
+    country                       = labor_participation_female$Country.Name,
+    labor_participation_female    = labor_participation_female$mean,
+    labor_participation_male      = labor_participation_male$mean,
+    labor_participation_total_ilo = labor_participation_total_ilo$mean,
+    labor_participation_total_nat = labor_participation_total_nat$mean,
+    labor_participation_ratio_ilo = labor_participation_ratio_ilo$mean,
+    secondary_school_female       = secondary_school_female$mean,
+    secondary_school_male         = secondary_school_male$mean,
+    secondary_school_female_ratio = secondary_school_female_ratio$mean,
+    contraceptive_prevalence      = contraceptive_prevalence$mean,
+    hiv_rate_female               = hiv_rate_female$mean,
+    violence_by_partner           = violence_by_partner$mean,
+    married_by_18_rate            = married_by_18_rate$mean,
+    adolescent_fertility_rate     = adolescent_fertility_rate$mean
+)
+
+# Drop any fields for which we don't have any data
+# In this case, this turns out to be only the violence by partner field
+gender_coverage = apply(world_bank_gender_dat, 2, function(z) {sum(!is.na(z))})
+
+world_bank_gender_dat = world_bank_gender_dat[,gender_coverage > 0]
+
+# Add world bank gender data to main data frame
+dat = merge(dat, world_bank_gender_dat, by='country')
 ```
 
 ### Combined dataset
@@ -285,7 +376,7 @@ The combined dataset now contains:
 
 ```{r load_combined_dataset}
 # more sensible row names
-rownames(df) = df$country
+rownames(dat) = dat$country
 
 # load region info
 region_info = read.delim('input/ISO-3166-Countries-with-Regional-Codes.csv')
@@ -294,25 +385,25 @@ region_names = read.csv('input/georegion.csv')
 # add region names main dataframe
 region_info$region = region_names$Region[match(region_info$region.code,
                                              region_names$M49.numeric.code)]
-regions = region_info$region[match(df$country, region_info$name)]
+regions = region_info$region[match(dat$country, region_info$name)]
 
 # store country names separately to make it easy to work with the remaining
 # numeric predictor and outcome variables
-country_names = as.character(df$country)
-df = df %>% select(-country)
+country_names = as.character(dat$country)
+dat = dat %>% select(-country)
 
 # what are we missing?
 print("Number of missing datapoints for each variable:")
-apply(df, 2, function (x) {sum(is.na(x))})
+apply(dat, 2, function (x) {sum(is.na(x))})
 
 print("Countries with missing data:")
-country_names[!complete.cases(df)]
+country_names[!complete.cases(dat)]
 
 # create a version which includes only those countries that have all data
 # fields populated
-df_complete = df[complete.cases(df),]
-country_names_complete = country_names[complete.cases(df)]
-regions_complete = regions[complete.cases(df)]
+df_complete = dat[complete.cases(dat),]
+country_names_complete = country_names[complete.cases(dat)]
+regions_complete = regions[complete.cases(dat)]
 ```
 
 Let's see what the dataset looks like now at this point:
