@@ -500,8 +500,12 @@ df_complete = df_complete %>%
            -labor_participation_male)
 row.names(df_complete) = country_names_complete
 
+output_df = df_complete
+output_df$country = rownames(df_complete)
+output_df$region  = regions_complete
+
 # Save this dataset
-write.csv(df_complete, file='output/Stunting_clean.csv', row.names=FALSE)
+write.csv(output_df, file='output/Stunting_clean.csv', row.names=FALSE)
 ```
 
 Let's redo some of the above plots to see how things look now...
