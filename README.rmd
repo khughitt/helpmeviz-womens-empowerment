@@ -500,9 +500,13 @@ df_complete = df_complete %>%
            -labor_participation_male)
 row.names(df_complete) = country_names_complete
 
+# Create version of dataframe with country/region info
 output_df = df_complete
-output_df$country = rownames(df_complete)
 output_df$region  = regions_complete
+output_df$country = rownames(df_complete)
+
+# Reorder columns so that country name and region are on the left side
+output_df = output_df[,c(ncol(output_df), ncol(output_df) - 1, 1:(ncol(output_df) - 2))]
 
 # Save this dataset
 write.csv(output_df, file='output/Stunting_clean.csv', row.names=FALSE)
