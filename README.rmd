@@ -1,10 +1,12 @@
 ---
 author: "Keith Hughitt"
-date: "06/28/2014"
+date: "09/28/2014"
+title: "Bread for the World: Women's Empowerment and Nutrition"
 output:
   knitrBootstrap::bootstrap_document:
-    title: "Bread for the World: Women's Empowerment and Nutrition"
     theme: flatly
+  md_document:
+    variant: markdown_github
 ---
 
 ```{r knitr_settings, include=FALSE}
@@ -17,6 +19,16 @@ opts_chunk$set(fig.width=1080/96,
 
 Bread for the World Hackathon: Women's Empowerment & Nutrition
 ==============================================================
+
+```{r run_date, results='asis', echo=FALSE}
+email = "<a href='mailto:khughitt@umd.edu'>Keith Hughitt</a>"
+last_update = format(Sys.time(), "(<time>%Y-%m-%d</time>)")
+cat(paste(email, last_update))
+
+# Clean up any existing variables
+rm(list=ls())
+```
+[view source](README.rmd)
 
 Introduction
 ------------
