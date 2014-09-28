@@ -28,7 +28,8 @@ cat(paste(email, last_update))
 # Clean up any existing variables
 rm(list=ls())
 ```
-[view source](README.rmd)
+
+[view source](https://raw.githubusercontent.com/khughitt/helpmeviz-womens-empowerment/master/README.rmd)
 
 Introduction
 ------------
@@ -100,6 +101,7 @@ The data used for this analysis comes from several sources:
    time](https://data.undp.org/dataset/GII-Gender-Inequality-Index-value/bh77-rzbn)
 7. [The World Bank: Child Malnutrition
    Estimates](http://data.worldbank.org/child-malnutrition)
+8. Additional_Indicators_for_Stunting_Tool.csv (TODO: list sources)
 
 Some relevant tables from each of the above reports have been compiled into CSV
 and excel spreadsheets and made available for the hackathon. The CSV versions
@@ -323,19 +325,19 @@ wb_gender$mean = apply(values, 1, function(x) { mean(x, na.rm=T) })
 wb_gender = wb_gender %>% select(Country.Name, Indicator.Name, mean)
 
 # Add gender variables to the main dataframe
-labor_participation_female    = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, female (% ages 15-24) (national estimate)')
-labor_participation_male      = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, male (% ages 15-24) (national estimate)')
-labor_participation_total_ilo = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, total (% of ages 15-24) (modeled ILO estimate)')
-labor_participation_total_nat = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, total (% of ages 15-24) (national estimate)')
-labor_participation_ratio_ilo = wb_gender %>% filter(Indicator.Name == 'Ratio of female to male labor force participation rate (%) (modeled ILO estimate)')
-secondary_school_female       = wb_gender %>% filter(Indicator.Name == 'Progression to secondary school, female (%)')
-secondary_school_male         = wb_gender %>% filter(Indicator.Name == 'Progression to secondary school, male (%)')
-secondary_school_female_ratio = wb_gender %>% filter(Indicator.Name == 'Ratio of female to male secondary enrollment (%)')
-contraceptive_prevalence      = wb_gender %>% filter(Indicator.Name == 'Contraceptive prevalence (% of women ages 15-49)')
-hiv_rate_female               = wb_gender %>% filter(Indicator.Name == 'Female adults with HIV (% of population ages 15+ with HIV)')
-violence_by_partner           = wb_gender %>% filter(Indicator.Name == 'Proportion of women aged 15-49 subjected to physical or sexual violence in the last 12 months by an intimate partner (%)')
-married_by_18_rate            = wb_gender %>% filter(Indicator.Name == 'Women who were first married by age 18 (% of women ages 20-24)')
-adolescent_fertility_rate     = wb_gender %>% filter(Indicator.Name == 'Adolescent fertility rate (births per 1,000 women ages 15-19)')
+labor_participation_female     = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, female (% ages 15-24) (national estimate)')
+labor_participation_male       = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, male (% ages 15-24) (national estimate)')
+labor_participation_total_ilo  = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, total (% of ages 15-24) (modeled ILO estimate)')
+labor_participation_total_nat  = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, total (% of ages 15-24) (national estimate)')
+labor_participation_ratio_ilo  = wb_gender %>% filter(Indicator.Name == 'Ratio of female to male labor force participation rate (%) (modeled ILO estimate)')
+secondary_school_female        = wb_gender %>% filter(Indicator.Name == 'Progression to secondary school, female (%)')
+secondary_school_male          = wb_gender %>% filter(Indicator.Name == 'Progression to secondary school, male (%)')
+secondary_school_female_ratio  = wb_gender %>% filter(Indicator.Name == 'Ratio of female to male secondary enrollment (%)')
+contraceptive_prevalence       = wb_gender %>% filter(Indicator.Name == 'Contraceptive prevalence (% of women ages 15-49)')
+hiv_rate_female                = wb_gender %>% filter(Indicator.Name == 'Female adults with HIV (% of population ages 15+ with HIV)')
+violence_by_partner            = wb_gender %>% filter(Indicator.Name == 'Proportion of women aged 15-49 subjected to physical or sexual violence in the last 12 months by an intimate partner (%)')
+married_by_18_rate             = wb_gender %>% filter(Indicator.Name == 'Women who were first married by age 18 (% of women ages 20-24)')
+adolescent_fertility_rate      = wb_gender %>% filter(Indicator.Name == 'Adolescent fertility rate (births per 1,000 women ages 15-19)')
 
 world_bank_gender_dat = data.frame(
     country                       = labor_participation_female$Country.Name,
@@ -364,6 +366,56 @@ world_bank_gender_dat = world_bank_gender_dat[,gender_coverage > 0]
 dat = merge(dat, world_bank_gender_dat, by='country')
 ```
 
+### Load additional indicators from Bread for the World
+
+A few more indicators were put together in a single file
+(Additional_Indicators_for_Stunting_Tool.csv) for inclusion in the final
+version of analysis. The source of these variables is likely the same as those
+above, but this should be confirmed.
+
+```{r load_additional_indicators}
+addn_ind = tbl_df(read.delim('input/Additional_Indicators_for_Stunting_Tool.csv'))
+                           
+
+# Grab data for the last 15 years
+addn_ind = addn_ind %>% select(Country.Name,
+                               Indicator.Name, X2000, X2001, X2002, 
+                               X2003, X2004, X2005, X2006,   X2007, 
+                               X2008, X2009, X2010, X2011, X2012, X2013)
+
+# Compute averages of each indicator for past 15 years
+values = addn_ind %>% select(-Country.Name, -Indicator.Name)
+addn_ind$mean = apply(values, 1, function(x) { mean(x, na.rm=T) })
+
+# Drop Countries with no recent data
+#addn_ind = addn_ind %>% filter(!is.nan(mean))
+
+# Drop the individual year columns
+addn_ind = addn_ind %>% select(Country.Name, Indicator.Name, mean)
+
+# Add gender variables to the main dataframe
+labor_participation_female_ilo    = addn_ind %>% filter(Indicator.Name == 'Labor force participation rate for ages 15-24, female (%) (modeled ILO estimate)')
+labor_force_female_percent        = addn_ind %>% filter(Indicator.Name == 'Labor force, female (% of total labor force)')
+account_at_financial_inst_female  = addn_ind %>% filter(Indicator.Name == 'Account at a formal financial institution, female (% age 15+)') 
+female_legislators_officials_mgrs = addn_ind %>% filter(Indicator.Name == 'Female legistlators, senior officials and managers (% of total)') 
+
+addn_ind_dat = data.frame(
+    country                           = labor_participation_female_ilo$Country.Name,
+    labor_participation_female_ilo    = labor_participation_female_ilo$mean,
+    labor_force_female_percent        = labor_force_female_percent$mean,
+    account_at_financial_inst_female  = account_at_financial_inst_female$mean,
+    female_legislators_officials_mgrs = female_legislators_officials_mgrs$mean
+)
+
+# Drop any fields for which we don't have any data
+gender_coverage = apply(addn_ind_dat, 2, function(z) {sum(!is.na(z))})
+
+addn_ind_dat = addn_ind_dat[,gender_coverage > 0]
+
+# Add world bank gender data to main data frame
+dat = merge(dat, addn_ind_dat, by='country')
+```
+
 ### Combined dataset
 
 #### Data fields
@@ -385,6 +437,10 @@ The combined dataset now contains:
 * 2008-2012 Prevalence of underweight in children under five years (IFPRI)
 * Percent children with stunting (Female)
 * Percent children with stunting (Male)
+* Labor force participation rate for ages 15-24, female (%) (modeled ILO estimate)
+* Labor force, female (% of total labor force)
+* Account at a formal financial institution, female (% age 15+)
+* Female legislators, senior officials and managers (% of total)
 
 ```{r load_combined_dataset}
 # more sensible row names

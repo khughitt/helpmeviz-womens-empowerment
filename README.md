@@ -1,7 +1,9 @@
 Bread for the World Hackathon: Women's Empowerment & Nutrition
 ==============================================================
 
-<a href='mailto:khughitt@umd.edu'>Keith Hughitt</a> (<time>2014-09-28</time>) [view source](README.rmd)
+<a href='mailto:khughitt@umd.edu'>Keith Hughitt</a> (<time>2014-09-28</time>)
+
+[view source](https://raw.githubusercontent.com/khughitt/helpmeviz-womens-empowerment/master/README.rmd)
 
 Introduction
 ------------
@@ -43,6 +45,7 @@ The data used for this analysis comes from several sources:
 5.  [The State of the World's Children (2014)](http://www.unicef.org/sowc2014/numbers/#statistics)
 6.  [GII: Gender Inequality Index over time](https://data.undp.org/dataset/GII-Gender-Inequality-Index-value/bh77-rzbn)
 7.  [The World Bank: Child Malnutrition Estimates](http://data.worldbank.org/child-malnutrition)
+8.  Additional\_Indicators\_for\_Stunting\_Tool.csv (TODO: list sources)
 
 Some relevant tables from each of the above reports have been compiled into CSV and excel spreadsheets and made available for the hackathon. The CSV versions of those tables are included in the `input` folder.
 
@@ -250,19 +253,19 @@ wb_gender$mean = apply(values, 1, function(x) { mean(x, na.rm=T) })
 wb_gender = wb_gender %>% select(Country.Name, Indicator.Name, mean)
 
 # Add gender variables to the main dataframe
-labor_participation_female    = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, female (% ages 15-24) (national estimate)')
-labor_participation_male      = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, male (% ages 15-24) (national estimate)')
-labor_participation_total_ilo = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, total (% of ages 15-24) (modeled ILO estimate)')
-labor_participation_total_nat = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, total (% of ages 15-24) (national estimate)')
-labor_participation_ratio_ilo = wb_gender %>% filter(Indicator.Name == 'Ratio of female to male labor force participation rate (%) (modeled ILO estimate)')
-secondary_school_female       = wb_gender %>% filter(Indicator.Name == 'Progression to secondary school, female (%)')
-secondary_school_male         = wb_gender %>% filter(Indicator.Name == 'Progression to secondary school, male (%)')
-secondary_school_female_ratio = wb_gender %>% filter(Indicator.Name == 'Ratio of female to male secondary enrollment (%)')
-contraceptive_prevalence      = wb_gender %>% filter(Indicator.Name == 'Contraceptive prevalence (% of women ages 15-49)')
-hiv_rate_female               = wb_gender %>% filter(Indicator.Name == 'Female adults with HIV (% of population ages 15+ with HIV)')
-violence_by_partner           = wb_gender %>% filter(Indicator.Name == 'Proportion of women aged 15-49 subjected to physical or sexual violence in the last 12 months by an intimate partner (%)')
-married_by_18_rate            = wb_gender %>% filter(Indicator.Name == 'Women who were first married by age 18 (% of women ages 20-24)')
-adolescent_fertility_rate     = wb_gender %>% filter(Indicator.Name == 'Adolescent fertility rate (births per 1,000 women ages 15-19)')
+labor_participation_female     = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, female (% ages 15-24) (national estimate)')
+labor_participation_male       = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, male (% ages 15-24) (national estimate)')
+labor_participation_total_ilo  = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, total (% of ages 15-24) (modeled ILO estimate)')
+labor_participation_total_nat  = wb_gender %>% filter(Indicator.Name == 'Labour force participation rates for 15-24, total (% of ages 15-24) (national estimate)')
+labor_participation_ratio_ilo  = wb_gender %>% filter(Indicator.Name == 'Ratio of female to male labor force participation rate (%) (modeled ILO estimate)')
+secondary_school_female        = wb_gender %>% filter(Indicator.Name == 'Progression to secondary school, female (%)')
+secondary_school_male          = wb_gender %>% filter(Indicator.Name == 'Progression to secondary school, male (%)')
+secondary_school_female_ratio  = wb_gender %>% filter(Indicator.Name == 'Ratio of female to male secondary enrollment (%)')
+contraceptive_prevalence       = wb_gender %>% filter(Indicator.Name == 'Contraceptive prevalence (% of women ages 15-49)')
+hiv_rate_female                = wb_gender %>% filter(Indicator.Name == 'Female adults with HIV (% of population ages 15+ with HIV)')
+violence_by_partner            = wb_gender %>% filter(Indicator.Name == 'Proportion of women aged 15-49 subjected to physical or sexual violence in the last 12 months by an intimate partner (%)')
+married_by_18_rate             = wb_gender %>% filter(Indicator.Name == 'Women who were first married by age 18 (% of women ages 20-24)')
+adolescent_fertility_rate      = wb_gender %>% filter(Indicator.Name == 'Adolescent fertility rate (births per 1,000 women ages 15-19)')
 
 world_bank_gender_dat = data.frame(
     country                       = labor_participation_female$Country.Name,
@@ -291,6 +294,53 @@ world_bank_gender_dat = world_bank_gender_dat[,gender_coverage > 0]
 dat = merge(dat, world_bank_gender_dat, by='country')
 ```
 
+### Load additional indicators from Bread for the World
+
+A few more indicators were put together in a single file (Additional\_Indicators\_for\_Stunting\_Tool.csv) for inclusion in the final version of analysis. The source of these variables is likely the same as those above, but this should be confirmed.
+
+``` {.r}
+addn_ind = tbl_df(read.delim('input/Additional_Indicators_for_Stunting_Tool.csv'))
+                           
+
+# Grab data for the last 15 years
+addn_ind = addn_ind %>% select(Country.Name,
+                               Indicator.Name, X2000, X2001, X2002, 
+                               X2003, X2004, X2005, X2006,   X2007, 
+                               X2008, X2009, X2010, X2011, X2012, X2013)
+
+# Compute averages of each indicator for past 15 years
+values = addn_ind %>% select(-Country.Name, -Indicator.Name)
+addn_ind$mean = apply(values, 1, function(x) { mean(x, na.rm=T) })
+
+# Drop Countries with no recent data
+#addn_ind = addn_ind %>% filter(!is.nan(mean))
+
+# Drop the individual year columns
+addn_ind = addn_ind %>% select(Country.Name, Indicator.Name, mean)
+
+# Add gender variables to the main dataframe
+labor_participation_female_ilo    = addn_ind %>% filter(Indicator.Name == 'Labor force participation rate for ages 15-24, female (%) (modeled ILO estimate)')
+labor_force_female_percent        = addn_ind %>% filter(Indicator.Name == 'Labor force, female (% of total labor force)')
+account_at_financial_inst_female  = addn_ind %>% filter(Indicator.Name == 'Account at a formal financial institution, female (% age 15+)') 
+female_legislators_officials_mgrs = addn_ind %>% filter(Indicator.Name == 'Female legistlators, senior officials and managers (% of total)') 
+
+addn_ind_dat = data.frame(
+    country                           = labor_participation_female_ilo$Country.Name,
+    labor_participation_female_ilo    = labor_participation_female_ilo$mean,
+    labor_force_female_percent        = labor_force_female_percent$mean,
+    account_at_financial_inst_female  = account_at_financial_inst_female$mean,
+    female_legislators_officials_mgrs = female_legislators_officials_mgrs$mean
+)
+
+# Drop any fields for which we don't have any data
+gender_coverage = apply(addn_ind_dat, 2, function(z) {sum(!is.na(z))})
+
+addn_ind_dat = addn_ind_dat[,gender_coverage > 0]
+
+# Add world bank gender data to main data frame
+dat = merge(dat, addn_ind_dat, by='country')
+```
+
 ### Combined dataset
 
 #### Data fields
@@ -312,6 +362,10 @@ The combined dataset now contains:
 -   2008-2012 Prevalence of underweight in children under five years (IFPRI)
 -   Percent children with stunting (Female)
 -   Percent children with stunting (Male)
+-   Labor force participation rate for ages 15-24, female (%) (modeled ILO estimate)
+-   Labor force, female (% of total labor force)
+-   Account at a formal financial institution, female (% age 15+)
+-   Female legislators, senior officials and managers (% of total)
 
 ``` {.r}
 # more sensible row names
@@ -341,34 +395,38 @@ print("Number of missing datapoints for each variable:")
 apply(dat, 2, function (x) {sum(is.na(x))})
 ```
 
-    ##                       GII_2012       maternal_mortality_ratio 
-    ##                             18                              0 
-    ##  adolescent_fertility_rate_gii        seats_parlim_female_gii 
-    ##                              0                              2 
-    ##     secondary_education_female       secondary_education_male 
-    ##                             15                             15 
-    ## labor_participation_female_gii   labor_participation_male_gii 
-    ##                              2                              2 
-    ##             ifpri_hunger_index         ifpri_under5_mortality 
-    ##                              7                              0 
-    ##         ifpri_undernourishment       ifpri_under5_underweight 
-    ##                              7                              1 
-    ##             mean_stunting_male           mean_stunting_female 
-    ##                              0                              0 
-    ##         mean_malnutrition_male       mean_malnutrition_female 
-    ##                              0                              0 
-    ##     labor_participation_female       labor_participation_male 
-    ##                             23                             23 
-    ##  labor_participation_total_ilo  labor_participation_total_nat 
-    ##                              0                             22 
-    ##  labor_participation_ratio_ilo        secondary_school_female 
-    ##                              0                             15 
-    ##          secondary_school_male  secondary_school_female_ratio 
-    ##                             15                              6 
-    ##       contraceptive_prevalence                hiv_rate_female 
-    ##                              0                              0 
-    ##             married_by_18_rate      adolescent_fertility_rate 
-    ##                             18                              0
+    ##                          GII_2012          maternal_mortality_ratio 
+    ##                                18                                 0 
+    ##     adolescent_fertility_rate_gii           seats_parlim_female_gii 
+    ##                                 0                                 2 
+    ##        secondary_education_female          secondary_education_male 
+    ##                                15                                15 
+    ##    labor_participation_female_gii      labor_participation_male_gii 
+    ##                                 2                                 2 
+    ##                ifpri_hunger_index            ifpri_under5_mortality 
+    ##                                 7                                 0 
+    ##            ifpri_undernourishment          ifpri_under5_underweight 
+    ##                                 7                                 1 
+    ##                mean_stunting_male              mean_stunting_female 
+    ##                                 0                                 0 
+    ##            mean_malnutrition_male          mean_malnutrition_female 
+    ##                                 0                                 0 
+    ##        labor_participation_female          labor_participation_male 
+    ##                                23                                23 
+    ##     labor_participation_total_ilo     labor_participation_total_nat 
+    ##                                 0                                22 
+    ##     labor_participation_ratio_ilo           secondary_school_female 
+    ##                                 0                                15 
+    ##             secondary_school_male     secondary_school_female_ratio 
+    ##                                15                                 6 
+    ##          contraceptive_prevalence                   hiv_rate_female 
+    ##                                 0                                 0 
+    ##                married_by_18_rate         adolescent_fertility_rate 
+    ##                                18                                 0 
+    ##    labor_participation_female_ilo        labor_force_female_percent 
+    ##                                 0                                 0 
+    ##  account_at_financial_inst_female female_legislators_officials_mgrs 
+    ##                                12                                49
 
 ``` {.r}
 print("Countries with missing data:")
@@ -380,33 +438,43 @@ print("Countries with missing data:")
 country_names[!complete.cases(dat)]
 ```
 
-    ##  [1] "Afghanistan"              "Angola"                  
-    ##  [3] "Argentina"                "Belarus"                 
-    ##  [5] "Bhutan"                   "Bosnia and Herzegovina"  
-    ##  [7] "Botswana"                 "Brazil"                  
-    ##  [9] "Bulgaria"                 "Burundi"                 
-    ## [11] "Central African Republic" "Chad"                    
-    ## [13] "Chile"                    "China"                   
-    ## [15] "Comoros"                  "Costa Rica"              
-    ## [17] "Djibouti"                 "Eritrea"                 
-    ## [19] "Ethiopia"                 "Fiji"                    
-    ## [21] "Gabon"                    "Guinea"                  
-    ## [23] "Guinea-Bissau"            "Haiti"                   
-    ## [25] "Iraq"                     "Kenya"                   
-    ## [27] "Kuwait"                   "Lesotho"                 
-    ## [29] "Libya"                    "Madagascar"              
-    ## [31] "Malaysia"                 "Mauritania"              
-    ## [33] "Montenegro"               "Myanmar"                 
-    ## [35] "Nicaragua"                "Nigeria"                 
-    ## [37] "Oman"                     "Panama"                  
-    ## [39] "Papua New Guinea"         "Romania"                 
-    ## [41] "Saudi Arabia"             "Senegal"                 
-    ## [43] "Serbia"                   "Somalia"                 
-    ## [45] "Sudan"                    "Suriname"                
-    ## [47] "Swaziland"                "Timor-Leste"             
-    ## [49] "Tunisia"                  "Uganda"                  
-    ## [51] "Uruguay"                  "Uzbekistan"              
-    ## [53] "Zimbabwe"
+    ##  [1] "Afghanistan"              "Albania"                 
+    ##  [3] "Angola"                   "Argentina"               
+    ##  [5] "Belarus"                  "Benin"                   
+    ##  [7] "Bhutan"                   "Bosnia and Herzegovina"  
+    ##  [9] "Botswana"                 "Brazil"                  
+    ## [11] "Bulgaria"                 "Burundi"                 
+    ## [13] "Cameroon"                 "Central African Republic"
+    ## [15] "Chad"                     "Chile"                   
+    ## [17] "China"                    "Colombia"                
+    ## [19] "Comoros"                  "Costa Rica"              
+    ## [21] "Djibouti"                 "Eritrea"                 
+    ## [23] "Ethiopia"                 "Fiji"                    
+    ## [25] "Gabon"                    "Ghana"                   
+    ## [27] "Guatemala"                "Guinea"                  
+    ## [29] "Guinea-Bissau"            "Guyana"                  
+    ## [31] "Haiti"                    "Honduras"                
+    ## [33] "Iraq"                     "Jamaica"                 
+    ## [35] "Jordan"                   "Kenya"                   
+    ## [37] "Kuwait"                   "Lesotho"                 
+    ## [39] "Liberia"                  "Libya"                   
+    ## [41] "Madagascar"               "Malawi"                  
+    ## [43] "Malaysia"                 "Mali"                    
+    ## [45] "Mauritania"               "Montenegro"              
+    ## [47] "Mozambique"               "Myanmar"                 
+    ## [49] "Namibia"                  "Nicaragua"               
+    ## [51] "Niger"                    "Nigeria"                 
+    ## [53] "Oman"                     "Panama"                  
+    ## [55] "Papua New Guinea"         "Romania"                 
+    ## [57] "Rwanda"                   "Saudi Arabia"            
+    ## [59] "Senegal"                  "Serbia"                  
+    ## [61] "Sierra Leone"             "Somalia"                 
+    ## [63] "Sudan"                    "Suriname"                
+    ## [65] "Swaziland"                "Tajikistan"              
+    ## [67] "Timor-Leste"              "Togo"                    
+    ## [69] "Tunisia"                  "Uganda"                  
+    ## [71] "Uruguay"                  "Uzbekistan"              
+    ## [73] "Zambia"                   "Zimbabwe"
 
 ``` {.r}
 # create a version which includes only those countries that have all data
@@ -424,11 +492,11 @@ kable(df_complete[1:5,2:5])
 
 ||maternal\_mortality\_ratio|adolescent\_fertility\_rate\_gii|seats\_parlim\_female\_gii|secondary\_education\_female|
 |:--|-------------------------:|-------------------------------:|-------------------------:|---------------------------:|
-|Albania|27|14.9|15.7|78.8|
 |Algeria|97|6.1|25.6|20.9|
 |Armenia|30|33.2|10.7|94.1|
 |Azerbaijan|43|31.4|16.0|90.0|
 |Bangladesh|240|68.2|19.7|30.8|
+|Burkina Faso|300|117.4|15.3|0.9|
 
 ``` {.r}
 kable(df_complete[1:5,6:10])
@@ -436,11 +504,11 @@ kable(df_complete[1:5,6:10])
 
 ||secondary\_education\_male|labor\_participation\_female\_gii|labor\_participation\_male\_gii|ifpri\_hunger\_index|ifpri\_under5\_mortality|
 |:--|-------------------------:|--------------------------------:|------------------------------:|-------------------:|-----------------------:|
-|Albania|85.0|49.6|71.3|5.2|1.4|
 |Algeria|27.3|15.0|71.9|5.0|3.0|
 |Armenia|94.8|49.4|70.2|5.0|1.8|
 |Azerbaijan|95.7|61.6|68.5|5.0|4.5|
 |Bangladesh|39.3|57.2|84.3|19.4|4.6|
+|Burkina Faso|3.2|77.5|90.4|22.2|14.6|
 
 ``` {.r}
 kable(df_complete[1:5,11:14])
@@ -448,11 +516,11 @@ kable(df_complete[1:5,11:14])
 
 ||ifpri\_undernourishment|ifpri\_under5\_underweight|mean\_stunting\_male|mean\_stunting\_female|
 |:--|----------------------:|-------------------------:|-------------------:|---------------------:|
-|Albania|7.8|6.3|30.93|28.43|
 |Algeria|3.7|5.7|22.23|19.57|
 |Armenia|3.0|5.3|19.57|18.10|
 |Azerbaijan|1.5|3.3|26.45|24.35|
 |Bangladesh|16.8|36.8|49.29|48.32|
+|Burkina Faso|25.9|26.2|41.45|36.27|
 
 Visualization
 -------------
@@ -680,8 +748,8 @@ sessionInfo()
     ## other attached packages:
     ##  [1] ggplot2_1.0.0        gplots_2.14.2        RColorBrewer_1.0-5  
     ##  [4] bpca_1.2-2           rgl_0.94.1131        scatterplot3d_0.3-35
-    ##  [7] dplyr_0.2            knitr_1.6            rmarkdown_0.3.3     
-    ## [10] knitrBootstrap_1.0.0 setwidth_1.0-3       colorout_1.0-3      
+    ##  [7] rmarkdown_0.3.3      knitrBootstrap_1.0.0 dplyr_0.2           
+    ## [10] knitr_1.6            setwidth_1.0-3       colorout_1.0-3      
     ## [13] vimcom_1.0-0        
     ## 
     ## loaded via a namespace (and not attached):
