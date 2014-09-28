@@ -12,8 +12,8 @@ output:
 ```{r knitr_settings, include=FALSE}
 library(knitr)
 opts_knit$set(progress=TRUE, verbose=TRUE)
-opts_chunk$set(fig.width=1080/96,
-               fig.height=1080/96,
+opts_chunk$set(fig.width=1600/96,
+               fig.height=1600/96,
                dpi=96)
 ```
 
@@ -482,6 +482,17 @@ kable(df_complete[1:5,6:10])
 kable(df_complete[1:5,11:14])
 ```
 
+Standardization
+---------------
+
+Before visualizing the relationships between the various indicators, it will be
+helpful to scale the indicators so that they are are on a similar scale and can
+be more readily compared to one another.
+
+```{r standardization}
+df_scaled = as.data.frame(scale(df_complete))
+```
+
 Visualization
 -------------
 
@@ -492,6 +503,8 @@ our outcome of interest; rate of stunting. Below, a data-dimension reduction
 tool called a [biplot](http://en.wikipedia.org/wiki/Biplot) is used for this.
 
 [SVG version](figure/biplot.svg).
+
+#### Biplot (Raw)
 
 ```{r biplot_orig, dev=c('png', 'svg')}
 library(bpca)
@@ -511,6 +524,8 @@ plot(bpca(df_complete),
 title("biplot (original)")
 ```
 
+#### Heatmap: Indictor vs. Country (Raw, log scale)
+
 Another way to visualize these relationships is using a heatmap:
 
 ```{r heatmap_orig}
@@ -521,15 +536,29 @@ heatmap.2(log1p(as.matrix(df_complete)),
           xlab="Measure", ylab="Country", main="Heatmap (original)")
 ```
 
-A few interesting things to note here:
+#### Heatmap: Indictor vs. Country (Scaled)
 
-- Maternal mortality looks like an outlier and does not seem to corerlate well
-  with any of the other variables.
-- Something looks amiss with labor_participation_male
-- Not surprising, but there are some clear regional trends in the data (e.g.
-  the bottom-most cluster of North and Central African countries).
+The columns of red and yellow above are a result of using the raw data which
+includes variables on very different scales. For example, `GII_2012` which
+ranges from 0.311 - 0.610 and `maternal_mortality_ratio` which ranges from 20 -
+300.
 
-Finally, let's look at the the correlations between the variables directly:
+Using a standardized (scaled) version of the data will allow us to better
+compare the relationships between these variables.
+
+```{r heatmap_orig_scaled}
+library(gplots)
+heatmap.2(as.matrix(df_scaled),
+          RowSideColors=region_colors,
+          trace="none", margins=c(12,8),
+          xlab="Measure", ylab="Country", main="Heatmap (original)")
+```
+
+
+Note that there are some clear regional trends in the data (e.g. the
+bottom-most cluster of North and Central African countries).
+
+Next, let's look at the the correlations between the variables directly:
 
 ```{r variable_correlations}
 heatmap.2(cor(df_complete), trace="none", margins=c(13,13), main="Variable
@@ -568,16 +597,28 @@ df_complete = df_complete %>%
            -labor_participation_male)
 row.names(df_complete) = country_names_complete
 
+# Updated scaled version as well
+df_scaled = as.data.frame(scale(df_complete))
+
 # Create version of dataframe with country/region info
 output_df = df_complete
 output_df$region  = regions_complete
 output_df$country = rownames(df_complete)
 
+output_scaled_df = df_scaled
+output_scaled_df$region  = regions_complete
+output_scaled_df$country = rownames(df_scaled)
+
 # Reorder columns so that country name and region are on the left side
 output_df = output_df[,c(ncol(output_df), ncol(output_df) - 1, 1:(ncol(output_df) - 2))]
+output_scaled_df = output_scaled_df[,c(ncol(output_scaled_df),
+                                       ncol(output_scaled_df) - 1,
+                                       1:(ncol(output_scaled_df) - 2))]
 
 # Save this dataset
 write.csv(output_df, file='output/Stunting_clean.csv', row.names=FALSE)
+write.csv(output_scaled_df, file='output/Stunting_clean_scaled.csv', 
+          row.names=FALSE)
 ```
 
 Let's redo some of the above plots to see how things look now...
@@ -592,10 +633,10 @@ plot(bpca(df_complete),
 title("Biplot (clean)")
 
 # country and variable biclustering and heatmap
-heatmap.2(log1p(as.matrix(df_complete)),
+heatmap.2(as.matrix(df_scaled),
           RowSideColors=region_colors,
           trace="none", margins=c(12,8),
-          xlab="Measure", ylab="Country", main="Heatmap (clean)")
+          xlab="Measure", ylab="Country", main="Heatmap (clean, scaled)")
 
 # variable correlations
 heatmap.2(cor(df_complete), trace="none", margins=c(13,13), main="Variable

@@ -522,6 +522,15 @@ kable(df_complete[1:5,11:14])
 |Bangladesh|16.8|36.8|49.29|48.32|
 |Burkina Faso|25.9|26.2|41.45|36.27|
 
+Standardization
+---------------
+
+Before visualizing the relationships between the various indicators, it will be helpful to scale the indicators so that they are are on a similar scale and can be more readily compared to one another.
+
+``` {.r}
+df_scaled = as.data.frame(scale(df_complete))
+```
+
 Visualization
 -------------
 
@@ -530,6 +539,8 @@ Visualization
 Let's start by exploring the relationship between the various predictors and our outcome of interest; rate of stunting. Below, a data-dimension reduction tool called a [biplot](http://en.wikipedia.org/wiki/Biplot) is used for this.
 
 [SVG version](figure/biplot.svg).
+
+#### Biplot (Raw)
 
 ``` {.r}
 library(bpca)
@@ -551,6 +562,8 @@ title("biplot (original)")
 
 ![plot of chunk biplot\_orig](./README_files/figure-markdown_github/biplot_orig.png)
 
+#### Heatmap: Indictor vs. Country (Raw, log scale)
+
 Another way to visualize these relationships is using a heatmap:
 
 ``` {.r}
@@ -563,13 +576,25 @@ heatmap.2(log1p(as.matrix(df_complete)),
 
 ![plot of chunk heatmap\_orig](./README_files/figure-markdown_github/heatmap_orig.png)
 
-A few interesting things to note here:
+#### Heatmap: Indictor vs. Country (Scaled)
 
--   Maternal mortality looks like an outlier and does not seem to corerlate well with any of the other variables.
--   Something looks amiss with labor\_participation\_male
--   Not surprising, but there are some clear regional trends in the data (e.g. the bottom-most cluster of North and Central African countries).
+The columns of red and yellow above are a result of using the raw data which includes variables on very different scales. For example, `GII_2012` which ranges from 0.311 - 0.610 and `maternal_mortality_ratio` which ranges from 20 - 300.
 
-Finally, let's look at the the correlations between the variables directly:
+Using a standardized (scaled) version of the data will allow us to better compare the relationships between these variables.
+
+``` {.r}
+library(gplots)
+heatmap.2(as.matrix(df_scaled),
+          RowSideColors=region_colors,
+          trace="none", margins=c(12,8),
+          xlab="Measure", ylab="Country", main="Heatmap (original)")
+```
+
+![plot of chunk heatmap\_orig\_scaled](./README_files/figure-markdown_github/heatmap_orig_scaled.png)
+
+Note that there are some clear regional trends in the data (e.g. the bottom-most cluster of North and Central African countries).
+
+Next, let's look at the the correlations between the variables directly:
 
 ``` {.r}
 heatmap.2(cor(df_complete), trace="none", margins=c(13,13), main="Variable
@@ -607,16 +632,28 @@ df_complete = df_complete %>%
            -labor_participation_male)
 row.names(df_complete) = country_names_complete
 
+# Updated scaled version as well
+df_scaled = as.data.frame(scale(df_complete))
+
 # Create version of dataframe with country/region info
 output_df = df_complete
 output_df$region  = regions_complete
 output_df$country = rownames(df_complete)
 
+output_scaled_df = df_scaled
+output_scaled_df$region  = regions_complete
+output_scaled_df$country = rownames(df_scaled)
+
 # Reorder columns so that country name and region are on the left side
 output_df = output_df[,c(ncol(output_df), ncol(output_df) - 1, 1:(ncol(output_df) - 2))]
+output_scaled_df = output_scaled_df[,c(ncol(output_scaled_df),
+                                       ncol(output_scaled_df) - 1,
+                                       1:(ncol(output_scaled_df) - 2))]
 
 # Save this dataset
 write.csv(output_df, file='output/Stunting_clean.csv', row.names=FALSE)
+write.csv(output_scaled_df, file='output/Stunting_clean_scaled.csv', 
+          row.names=FALSE)
 ```
 
 Let's redo some of the above plots to see how things look now...
@@ -635,10 +672,10 @@ title("Biplot (clean)")
 
 ``` {.r}
 # country and variable biclustering and heatmap
-heatmap.2(log1p(as.matrix(df_complete)),
+heatmap.2(as.matrix(df_scaled),
           RowSideColors=region_colors,
           trace="none", margins=c(12,8),
-          xlab="Measure", ylab="Country", main="Heatmap (clean)")
+          xlab="Measure", ylab="Country", main="Heatmap (clean, scaled)")
 ```
 
 ![plot of chunk cleaned\_data\_plots](./README_files/figure-markdown_github/cleaned_data_plots2.png)
