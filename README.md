@@ -1,7 +1,7 @@
 Bread for the World Hackathon: Women's Empowerment & Nutrition
 ==============================================================
 
-<a href='mailto:khughitt@umd.edu'>Keith Hughitt</a> (<time>2014-09-28</time>)
+<a href='mailto:khughitt@umd.edu'>Keith Hughitt</a> (<time>2014-09-29</time>)
 
 [view source](https://raw.githubusercontent.com/khughitt/helpmeviz-womens-empowerment/master/README.rmd)
 
@@ -84,11 +84,11 @@ gii_cols = c(
     "secondary_education_male_note", "labor_participation_female_gii",
     "labor_participation_male_gii"
 )
-dat = tbl_df(read.csv('input/Gender_Inequality_Index.csv', col.names=gii_cols,
+df_all = tbl_df(read.csv('input/Gender_Inequality_Index.csv', col.names=gii_cols,
                      na.strings='..'))
 
 # Drop unneeded fields
-dat = dat %>% select(-hdi_rank, -seats_parlim_female_note,
+df_all = df_all %>% select(-hdi_rank, -seats_parlim_female_note,
                      -secondary_education_female_note,
                      -secondary_education_male_note)
 ```
@@ -159,7 +159,7 @@ ifpri_dat$ifpri_under5_underweight = (ifpri %>%
          & Year == '2008-12'))$Data
 
 # Add to main dataset
-dat = merge(dat, ifpri_dat, by='country')
+df_all = merge(df_all, ifpri_dat, by='country')
 ```
 
 ### Load World Bank Stunting and Malnutrition data
@@ -207,7 +207,7 @@ world_bank_nutrition_dat = data.frame(
 )
 
 # Add world bank data to main data frame
-dat = merge(dat, world_bank_nutrition_dat, by='country')
+df_all = merge(df_all, world_bank_nutrition_dat, by='country')
 ```
 
 ### Load World Bank Gender Data
@@ -291,7 +291,7 @@ gender_coverage = apply(world_bank_gender_dat, 2, function(z) {sum(!is.na(z))})
 world_bank_gender_dat = world_bank_gender_dat[,gender_coverage > 0]
 
 # Add world bank gender data to main data frame
-dat = merge(dat, world_bank_gender_dat, by='country')
+df_all = merge(df_all, world_bank_gender_dat, by='country')
 ```
 
 ### Load additional indicators from Bread for the World
@@ -338,7 +338,7 @@ gender_coverage = apply(addn_ind_dat, 2, function(z) {sum(!is.na(z))})
 addn_ind_dat = addn_ind_dat[,gender_coverage > 0]
 
 # Add world bank gender data to main data frame
-dat = merge(dat, addn_ind_dat, by='country')
+df_all = merge(df_all, addn_ind_dat, by='country')
 ```
 
 ### Combined dataset
@@ -367,9 +367,11 @@ The combined dataset now contains:
 -   Account at a formal financial institution, female (% age 15+)
 -   Female legislators, senior officials and managers (% of total)
 
+#### Add region information
+
 ``` {.r}
 # more sensible row names
-rownames(dat) = dat$country
+rownames(df_all) = df_all$country
 
 # load region info
 region_info = read.delim('input/ISO-3166-Countries-with-Regional-Codes.csv')
@@ -378,21 +380,25 @@ region_names = read.csv('input/georegion.csv')
 # add region names main dataframe
 region_info$region = region_names$Region[match(region_info$region.code,
                                              region_names$M49.numeric.code)]
-regions = region_info$region[match(dat$country, region_info$name)]
+regions = region_info$region[match(df_all$country, region_info$name)]
 
 # store country names separately to make it easy to work with the remaining
 # numeric predictor and outcome variables
-country_names = as.character(dat$country)
-dat = dat %>% select(-country)
-
-# what are we missing?
-print("Number of missing datapoints for each variable:")
+country_names = as.character(df_all$country)
+df_all = df_all %>% select(-country)
 ```
 
-    ## [1] "Number of missing datapoints for each variable:"
+#### Create a second combined dataset with only countries that have no missing data
 
 ``` {.r}
-apply(dat, 2, function (x) {sum(is.na(x))})
+# what are we missing?
+print("Number of missing df_allapoints for each variable:")
+```
+
+    ## [1] "Number of missing df_allapoints for each variable:"
+
+``` {.r}
+apply(df_all, 2, function (x) {sum(is.na(x))})
 ```
 
     ##                          GII_2012          maternal_mortality_ratio 
@@ -435,7 +441,7 @@ print("Countries with missing data:")
     ## [1] "Countries with missing data:"
 
 ``` {.r}
-country_names[!complete.cases(dat)]
+country_names[!complete.cases(df_all)]
 ```
 
     ##  [1] "Afghanistan"              "Albania"                 
@@ -477,11 +483,86 @@ country_names[!complete.cases(dat)]
     ## [73] "Zambia"                   "Zimbabwe"
 
 ``` {.r}
+# number of missing datapoints for each country
+num_missing = rowSums(is.na(df_all))
+print(num_missing)
+```
+
+    ##              Afghanistan                  Albania                  Algeria 
+    ##                        8                        1                        0 
+    ##                   Angola                Argentina                  Armenia 
+    ##                        8                        1                        0 
+    ##               Azerbaijan               Bangladesh                  Belarus 
+    ##                        0                        0                        4 
+    ##                    Benin                   Bhutan   Bosnia and Herzegovina 
+    ##                        1                        3                        5 
+    ##                 Botswana                   Brazil                 Bulgaria 
+    ##                        1                        3                        1 
+    ##             Burkina Faso                  Burundi                 Cambodia 
+    ##                        0                        4                        0 
+    ##                 Cameroon Central African Republic                     Chad 
+    ##                        1                        4                        7 
+    ##                    Chile                    China                 Colombia 
+    ##                        1                        6                        1 
+    ##                  Comoros               Costa Rica                 Djibouti 
+    ##                        8                        1                        7 
+    ##       Dominican Republic                  Ecuador              El Salvador 
+    ##                        0                        0                        0 
+    ##                  Eritrea                 Ethiopia                     Fiji 
+    ##                        8                        4                        4 
+    ##                    Gabon                  Georgia                    Ghana 
+    ##                        7                        0                        1 
+    ##                Guatemala                   Guinea            Guinea-Bissau 
+    ##                        1                        5                       10 
+    ##                   Guyana                    Haiti                 Honduras 
+    ##                        1                        4                        1 
+    ##                    India                Indonesia                     Iraq 
+    ##                        0                        0                        8 
+    ##                  Jamaica                   Jordan               Kazakhstan 
+    ##                        1                        1                        0 
+    ##                    Kenya                   Kuwait                  Lebanon 
+    ##                        3                        1                        0 
+    ##                  Lesotho                  Liberia                    Libya 
+    ##                        4                        1                        8 
+    ##               Madagascar                   Malawi                 Malaysia 
+    ##                        3                        1                        1 
+    ##                     Mali               Mauritania                   Mexico 
+    ##                        1                        4                        0 
+    ##                 Mongolia               Montenegro                  Morocco 
+    ##                        0                        5                        0 
+    ##               Mozambique                  Myanmar                  Namibia 
+    ##                        1                        8                        1 
+    ##                    Nepal                Nicaragua                    Niger 
+    ##                        0                        2                        1 
+    ##                  Nigeria                     Oman                 Pakistan 
+    ##                        6                        3                        0 
+    ##                   Panama         Papua New Guinea                     Peru 
+    ##                        1                        7                        0 
+    ##              Philippines                  Romania                   Rwanda 
+    ##                        0                        1                        1 
+    ##             Saudi Arabia                  Senegal                   Serbia 
+    ##                        1                        4                        3 
+    ##             Sierra Leone                  Somalia             South Africa 
+    ##                        1                       12                        0 
+    ##                Sri Lanka                    Sudan                 Suriname 
+    ##                        0                        2                        5 
+    ##                Swaziland     Syrian Arab Republic               Tajikistan 
+    ##                        4                        0                        1 
+    ##                 Thailand              Timor-Leste                     Togo 
+    ##                        0                        4                        1 
+    ##      Trinidad and Tobago                  Tunisia                   Turkey 
+    ##                        0                        3                        0 
+    ##                   Uganda                  Ukraine                  Uruguay 
+    ##                        3                        0                        1 
+    ##               Uzbekistan                   Zambia                 Zimbabwe 
+    ##                        7                        1                        3
+
+``` {.r}
 # create a version which includes only those countries that have all data
 # fields populated
-df_complete = dat[complete.cases(dat),]
-country_names_complete = country_names[complete.cases(dat)]
-regions_complete = regions[complete.cases(dat)]
+df_complete = df_all[complete.cases(df_all),]
+country_names_complete = country_names[complete.cases(df_all)]
+regions_complete = regions[complete.cases(df_all)]
 ```
 
 Let's see what the dataset looks like now at this point:
@@ -528,7 +609,8 @@ Standardization
 Before visualizing the relationships between the various indicators, it will be helpful to scale the indicators so that they are are on a similar scale and can be more readily compared to one another.
 
 ``` {.r}
-df_scaled = as.data.frame(scale(df_complete))
+df_all_scaled      = as.data.frame(df_all)
+df_complete_scaled = as.data.frame(scale(df_complete))
 ```
 
 Visualization
@@ -540,41 +622,66 @@ Let's start by exploring the relationship between the various predictors and our
 
 [SVG version](figure/biplot.svg).
 
-#### Biplot (Raw)
+#### Create region colormap
 
 ``` {.r}
-library(bpca)
 library(RColorBrewer)
 
 # region colors
-region_colors = brewer.pal(length(unique(regions_complete)), "Set1")[
+region_colors = brewer.pal(length(unique(regions)), "Set1")[
+                    as.numeric(as.factor((as.character(regions))))]
+names(region_colors) = regions
+
+region_colors_complete = brewer.pal(length(unique(regions_complete)), "Set1")[
                     as.numeric(as.factor((as.character(regions_complete))))]
-names(region_colors) = regions_complete
+names(region_colors_complete) = regions_complete
+```
+
+#### Biplot (Raw)
+
+##### Countries with complete data only
+
+``` {.r}
+library(bpca)
 
 # biplot of uncleaned data
 plot(bpca(df_complete),
      var.factor=.5,
      obj.names=TRUE,
-     obj.col=region_colors,
+     obj.col=region_colors_complete,
      obj.labels=country_names_complete)
-title("biplot (original)")
+title("biplot (countries with complete data)")
 ```
 
-![plot of chunk biplot\_orig](./README_files/figure-markdown_github/biplot_orig.png)
+![plot of chunk biplot\_complete](./README_files/figure-markdown_github/biplot_complete.png)
 
 #### Heatmap: Indictor vs. Country (Raw, log scale)
 
 Another way to visualize these relationships is using a heatmap:
 
+##### All countries
+
 ``` {.r}
 library(gplots)
-heatmap.2(log1p(as.matrix(df_complete)),
+heatmap.2(log1p(as.matrix(df_all)),
           RowSideColors=region_colors,
           trace="none", margins=c(12,8),
           xlab="Measure", ylab="Country", main="Heatmap (original)")
 ```
 
-![plot of chunk heatmap\_orig](./README_files/figure-markdown_github/heatmap_orig.png)
+![plot of chunk heatmap\_orig\_all](./README_files/figure-markdown_github/heatmap_orig_all.png)
+
+##### Countries with complete data only
+
+``` {.r}
+library(gplots)
+heatmap.2(log1p(as.matrix(df_complete)),
+          RowSideColors=region_colors_complete,
+          trace="none", margins=c(12,8),
+          xlab="Measure", ylab="Country", main="Heatmap (original)")
+```
+
+![plot of chunk heatmap\_orig\_complete](./README_files/figure-markdown_github/heatmap_orig_complete.png)
 
 #### Heatmap: Indictor vs. Country (Scaled)
 
@@ -582,17 +689,31 @@ The columns of red and yellow above are a result of using the raw data which inc
 
 Using a standardized (scaled) version of the data will allow us to better compare the relationships between these variables.
 
+##### All countries
+
 ``` {.r}
 library(gplots)
-heatmap.2(as.matrix(df_scaled),
+heatmap.2(as.matrix(df_all_scaled),
           RowSideColors=region_colors,
           trace="none", margins=c(12,8),
           xlab="Measure", ylab="Country", main="Heatmap (original)")
 ```
 
-![plot of chunk heatmap\_orig\_scaled](./README_files/figure-markdown_github/heatmap_orig_scaled.png)
+![plot of chunk heatmap\_orig\_scaled\_all](./README_files/figure-markdown_github/heatmap_orig_scaled_all.png)
 
 Note that there are some clear regional trends in the data (e.g. the bottom-most cluster of North and Central African countries).
+
+##### Countries with complete data only
+
+``` {.r}
+library(gplots)
+heatmap.2(as.matrix(df_complete_scaled),
+          RowSideColors=region_colors_complete,
+          trace="none", margins=c(12,8),
+          xlab="Measure", ylab="Country", main="Heatmap (original)")
+```
+
+![plot of chunk heatmap\_orig\_scaled\_complete](./README_files/figure-markdown_github/heatmap_orig_scaled_complete.png)
 
 Next, let's look at the the correlations between the variables directly:
 
@@ -620,6 +741,21 @@ For now, let's also drop the labor participation male since it doesn't seem to b
 
 ``` {.r}
 # combine above variables and drop original columns
+
+# full dataset
+df_all = df_all %>%
+    mutate(
+        mean_stunting     = (mean_stunting_female + mean_stunting_male) / 2,
+        mean_malnutrition = (mean_malnutrition_female + mean_malnutrition_male) / 2,
+        secondary_education = (secondary_education_male +
+                               secondary_education_female) / 2) %>%
+    select(-mean_stunting_female, -mean_stunting_male,
+           -mean_malnutrition_female, -mean_malnutrition_male,
+           -secondary_education_male, -secondary_education_female,
+           -labor_participation_male)
+row.names(df_all) = country_names
+
+# complete case data
 df_complete = df_complete %>%
     mutate(
         mean_stunting     = (mean_stunting_female + mean_stunting_male) / 2,
@@ -632,29 +768,69 @@ df_complete = df_complete %>%
            -labor_participation_male)
 row.names(df_complete) = country_names_complete
 
-# Updated scaled version as well
-df_scaled = as.data.frame(scale(df_complete))
+# Updated scaled versions as well
+df_all_scaled      = as.data.frame(scale(df_all))
+df_complete_scaled = as.data.frame(scale(df_complete))
 
-# Create version of dataframe with country/region info
-output_df = df_complete
-output_df$region  = regions_complete
-output_df$country = rownames(df_complete)
+# Create versions of dataframe with country/region info
 
-output_scaled_df = df_scaled
-output_scaled_df$region  = regions_complete
-output_scaled_df$country = rownames(df_scaled)
+# full dataset
+output_df = df_all
+output_df$region  = regions
+output_df$country = rownames(df_all)
+
+output_scaled_df = df_all_scaled
+output_scaled_df$region  = regions
+output_scaled_df$country = rownames(df_all_scaled)
+
+# complete case dataset
+output_df_complete = df_complete
+output_df_complete$region  = regions_complete
+output_df_complete$country = rownames(df_complete)
+
+output_df_complete_scaled = df_complete_scaled
+output_df_complete_scaled$region  = regions_complete
+output_df_complete_scaled$country = rownames(df_complete_scaled)
 
 # Reorder columns so that country name and region are on the left side
-output_df = output_df[,c(ncol(output_df), ncol(output_df) - 1, 1:(ncol(output_df) - 2))]
+
+# full dataset
+output_df = output_df[,c(ncol(output_df), ncol(output_df) - 1,
+                         1:(ncol(output_df) - 2))]
+
 output_scaled_df = output_scaled_df[,c(ncol(output_scaled_df),
                                        ncol(output_scaled_df) - 1,
                                        1:(ncol(output_scaled_df) - 2))]
 
-# Save this dataset
-write.csv(output_df, file='output/Stunting_clean.csv', row.names=FALSE)
-write.csv(output_scaled_df, file='output/Stunting_clean_scaled.csv', 
+# complete case data
+output_df_complete = output_df_complete[,c(ncol(output_df_complete),
+                                           ncol(output_df_complete) - 1,
+                                           1:(ncol(output_df_complete) - 2))]
+
+output_df_complete_scaled =
+    output_df_complete_scaled[,c(ncol(output_df_complete_scaled),
+                                 ncol(output_df_complete_scaled) - 1,
+                                 1:(ncol(output_df_complete_scaled) - 2))]
+
+# Save combined datasets
+write.csv(output_df_complete, file='output/Stunting_clean.csv',
+          row.names=FALSE)
+write.csv(output_df_complete_scaled, file='output/Stunting_clean_scaled.csv',
+          row.names=FALSE)
+write.csv(output_df, file='output/Stunting_all.csv', 
+          row.names=FALSE)
+write.csv(output_scaled_df, file='output/Stunting_all_scaled.csv', 
           row.names=FALSE)
 ```
+
+### Download links
+
+-   [Stunting\_clean.csv](https://raw.githubusercontent.com/khughitt/helpmeviz-womens-empowerment/master/output/Stunting_clean.csv)
+-   [Stunting\_clean\_scaled.csv](https://raw.githubusercontent.com/khughitt/helpmeviz-womens-empowerment/master/output/Stunting_clean_scaled.csv)
+-   [Stunting\_all.csv](https://raw.githubusercontent.com/khughitt/helpmeviz-womens-empowerment/master/output/Stunting_all.csv)
+-   [Stunting\_all\_scaled.csv](https://raw.githubusercontent.com/khughitt/helpmeviz-womens-empowerment/master/output/Stunting_all_scaled.csv)
+
+### Continuing data exploration with cleaned up data
 
 Let's redo some of the above plots to see how things look now...
 
@@ -662,7 +838,7 @@ Let's redo some of the above plots to see how things look now...
 # biplot
 plot(bpca(df_complete),
      var.factor=.5,
-     obj.col=region_colors,
+     obj.col=region_colors_complete,
      obj.names=TRUE,
      obj.labels=country_names_complete)
 title("Biplot (clean)")
@@ -672,8 +848,8 @@ title("Biplot (clean)")
 
 ``` {.r}
 # country and variable biclustering and heatmap
-heatmap.2(as.matrix(df_scaled),
-          RowSideColors=region_colors,
+heatmap.2(as.matrix(df_complete_scaled),
+          RowSideColors=region_colors_complete,
           trace="none", margins=c(12,8),
           xlab="Measure", ylab="Country", main="Heatmap (clean, scaled)")
 ```
@@ -783,10 +959,10 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ##  [1] ggplot2_1.0.0        gplots_2.14.2        RColorBrewer_1.0-5  
-    ##  [4] bpca_1.2-2           rgl_0.94.1131        scatterplot3d_0.3-35
-    ##  [7] rmarkdown_0.3.3      knitrBootstrap_1.0.0 dplyr_0.2           
-    ## [10] knitr_1.6            setwidth_1.0-3       colorout_1.0-3      
+    ##  [1] ggplot2_1.0.0        gplots_2.14.2        bpca_1.2-2          
+    ##  [4] rgl_0.94.1131        scatterplot3d_0.3-35 RColorBrewer_1.0-5  
+    ##  [7] dplyr_0.2            knitr_1.6            rmarkdown_0.3.3     
+    ## [10] knitrBootstrap_1.0.0 setwidth_1.0-3       colorout_1.0-3      
     ## [13] vimcom_1.0-0        
     ## 
     ## loaded via a namespace (and not attached):
