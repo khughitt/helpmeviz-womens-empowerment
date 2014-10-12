@@ -1,7 +1,7 @@
 Bread for the World Hackathon: Women's Empowerment & Nutrition
 ==============================================================
 
-<a href='mailto:khughitt@umd.edu'>Keith Hughitt</a> (<time>2014-09-29</time>)
+<a href='mailto:khughitt@umd.edu'>Keith Hughitt</a> (<time>2014-10-12</time>)
 
 [view source](https://raw.githubusercontent.com/khughitt/helpmeviz-womens-empowerment/master/README.rmd)
 
@@ -323,13 +323,25 @@ labor_participation_female_ilo    = addn_ind %>% filter(Indicator.Name == 'Labor
 labor_force_female_percent        = addn_ind %>% filter(Indicator.Name == 'Labor force, female (% of total labor force)')
 account_at_financial_inst_female  = addn_ind %>% filter(Indicator.Name == 'Account at a formal financial institution, female (% age 15+)') 
 female_legislators_officials_mgrs = addn_ind %>% filter(Indicator.Name == 'Female legistlators, senior officials and managers (% of total)') 
+mortality_under5_female           = addn_ind %>% filter(Indicator.Name == 'Mortality rate, under-5, female (per 1,000)')
+contrib_family_workers_female     = addn_ind %>% filter(Indicator.Name == 'Contributing family workers, female (% of females employed)')
+credit_card_female                = addn_ind %>% filter(Indicator.Name == 'Credit card, female (% age 15+)')
+educational_attainment_female     = addn_ind %>% filter(Indicator.Name == 'Educational attainment, at least competed lower secondary, population 25+, female (%) (cumulative)')
+mortality_rate_female_child       = addn_ind %>% filter(Indicator.Name == 'Mortality rate, female child (per 1,000 female children age one)')
+belief_beating_justified          = addn_ind %>% filter(Indicator.Name == 'Women who believe a husband is justified in beating his wife when she argues with him (%)')
 
 addn_ind_dat = data.frame(
     country                           = labor_participation_female_ilo$Country.Name,
     labor_participation_female_ilo    = labor_participation_female_ilo$mean,
     labor_force_female_percent        = labor_force_female_percent$mean,
     account_at_financial_inst_female  = account_at_financial_inst_female$mean,
-    female_legislators_officials_mgrs = female_legislators_officials_mgrs$mean
+    female_legislators_officials_mgrs = female_legislators_officials_mgrs$mean,
+    mortality_under5_female           = mortality_under5_female$mean,
+    contrib_family_workers_female     = contrib_family_workers_female$mean,
+    credit_card_female                = credit_card_female$mean,
+    educational_attainment_femae      = educational_attainment_female$mean,
+    mortality_rate_female_child       = mortality_rate_female_child$mean,
+    belief_beating_justified          = belief_beating_justified$mean
 )
 
 # Drop any fields for which we don't have any data
@@ -366,6 +378,12 @@ The combined dataset now contains:
 -   Labor force, female (% of total labor force)
 -   Account at a formal financial institution, female (% age 15+)
 -   Female legislators, senior officials and managers (% of total)
+-   Mortality rate, under-5, female (per 1,000)
+-   Contributing family workers, female (% of females employed)
+-   Credit card, female (% age 15+)
+-   Educational attainment, at least competed lower secondary, population 25+, female (%) (cumulative)
+-   Mortality rate, female child (per 1,000 female children age one)
+-   Women who believe a husband is justified in beating his wife when she argues with him (%)
 
 #### Add region information
 
@@ -432,7 +450,13 @@ apply(df_all, 2, function (x) {sum(is.na(x))})
     ##    labor_participation_female_ilo        labor_force_female_percent 
     ##                                 0                                 0 
     ##  account_at_financial_inst_female female_legislators_officials_mgrs 
-    ##                                12                                49
+    ##                                12                                49 
+    ##           mortality_under5_female     contrib_family_workers_female 
+    ##                                 0                                31 
+    ##                credit_card_female      educational_attainment_femae 
+    ##                                12                                37 
+    ##       mortality_rate_female_child          belief_beating_justified 
+    ##                                34                                45
 
 ``` {.r}
 print("Countries with missing data:")
@@ -445,42 +469,50 @@ country_names[!complete.cases(df_all)]
 ```
 
     ##  [1] "Afghanistan"              "Albania"                 
-    ##  [3] "Angola"                   "Argentina"               
-    ##  [5] "Belarus"                  "Benin"                   
-    ##  [7] "Bhutan"                   "Bosnia and Herzegovina"  
-    ##  [9] "Botswana"                 "Brazil"                  
-    ## [11] "Bulgaria"                 "Burundi"                 
-    ## [13] "Cameroon"                 "Central African Republic"
-    ## [15] "Chad"                     "Chile"                   
-    ## [17] "China"                    "Colombia"                
-    ## [19] "Comoros"                  "Costa Rica"              
-    ## [21] "Djibouti"                 "Eritrea"                 
-    ## [23] "Ethiopia"                 "Fiji"                    
-    ## [25] "Gabon"                    "Ghana"                   
-    ## [27] "Guatemala"                "Guinea"                  
-    ## [29] "Guinea-Bissau"            "Guyana"                  
-    ## [31] "Haiti"                    "Honduras"                
-    ## [33] "Iraq"                     "Jamaica"                 
-    ## [35] "Jordan"                   "Kenya"                   
-    ## [37] "Kuwait"                   "Lesotho"                 
-    ## [39] "Liberia"                  "Libya"                   
-    ## [41] "Madagascar"               "Malawi"                  
-    ## [43] "Malaysia"                 "Mali"                    
-    ## [45] "Mauritania"               "Montenegro"              
-    ## [47] "Mozambique"               "Myanmar"                 
-    ## [49] "Namibia"                  "Nicaragua"               
-    ## [51] "Niger"                    "Nigeria"                 
-    ## [53] "Oman"                     "Panama"                  
-    ## [55] "Papua New Guinea"         "Romania"                 
-    ## [57] "Rwanda"                   "Saudi Arabia"            
-    ## [59] "Senegal"                  "Serbia"                  
-    ## [61] "Sierra Leone"             "Somalia"                 
-    ## [63] "Sudan"                    "Suriname"                
-    ## [65] "Swaziland"                "Tajikistan"              
-    ## [67] "Timor-Leste"              "Togo"                    
-    ## [69] "Tunisia"                  "Uganda"                  
-    ## [71] "Uruguay"                  "Uzbekistan"              
-    ## [73] "Zambia"                   "Zimbabwe"
+    ##  [3] "Algeria"                  "Angola"                  
+    ##  [5] "Argentina"                "Armenia"                 
+    ##  [7] "Belarus"                  "Benin"                   
+    ##  [9] "Bhutan"                   "Bosnia and Herzegovina"  
+    ## [11] "Botswana"                 "Brazil"                  
+    ## [13] "Bulgaria"                 "Burundi"                 
+    ## [15] "Cameroon"                 "Central African Republic"
+    ## [17] "Chad"                     "Chile"                   
+    ## [19] "China"                    "Colombia"                
+    ## [21] "Comoros"                  "Costa Rica"              
+    ## [23] "Djibouti"                 "Ecuador"                 
+    ## [25] "El Salvador"              "Eritrea"                 
+    ## [27] "Ethiopia"                 "Fiji"                    
+    ## [29] "Gabon"                    "Ghana"                   
+    ## [31] "Guatemala"                "Guinea"                  
+    ## [33] "Guinea-Bissau"            "Guyana"                  
+    ## [35] "Haiti"                    "Honduras"                
+    ## [37] "India"                    "Iraq"                    
+    ## [39] "Jamaica"                  "Jordan"                  
+    ## [41] "Kenya"                    "Kuwait"                  
+    ## [43] "Lebanon"                  "Lesotho"                 
+    ## [45] "Liberia"                  "Libya"                   
+    ## [47] "Madagascar"               "Malawi"                  
+    ## [49] "Malaysia"                 "Mali"                    
+    ## [51] "Mauritania"               "Mexico"                  
+    ## [53] "Montenegro"               "Morocco"                 
+    ## [55] "Mozambique"               "Myanmar"                 
+    ## [57] "Namibia"                  "Nepal"                   
+    ## [59] "Nicaragua"                "Niger"                   
+    ## [61] "Nigeria"                  "Oman"                    
+    ## [63] "Pakistan"                 "Panama"                  
+    ## [65] "Papua New Guinea"         "Romania"                 
+    ## [67] "Rwanda"                   "Saudi Arabia"            
+    ## [69] "Senegal"                  "Serbia"                  
+    ## [71] "Sierra Leone"             "Somalia"                 
+    ## [73] "South Africa"             "Sri Lanka"               
+    ## [75] "Sudan"                    "Suriname"                
+    ## [77] "Swaziland"                "Syrian Arab Republic"    
+    ## [79] "Tajikistan"               "Thailand"                
+    ## [81] "Timor-Leste"              "Togo"                    
+    ## [83] "Tunisia"                  "Turkey"                  
+    ## [85] "Uganda"                   "Uruguay"                 
+    ## [87] "Uzbekistan"               "Zambia"                  
+    ## [89] "Zimbabwe"
 
 ``` {.r}
 # number of missing datapoints for each country
@@ -489,73 +521,74 @@ print(num_missing)
 ```
 
     ##              Afghanistan                  Albania                  Algeria 
-    ##                        8                        1                        0 
+    ##                       12                        1                        2 
     ##                   Angola                Argentina                  Armenia 
-    ##                        8                        1                        0 
+    ##                       12                        3                        1 
     ##               Azerbaijan               Bangladesh                  Belarus 
-    ##                        0                        0                        4 
+    ##                        0                        0                        6 
     ##                    Benin                   Bhutan   Bosnia and Herzegovina 
-    ##                        1                        3                        5 
+    ##                        1                        6                        6 
     ##                 Botswana                   Brazil                 Bulgaria 
-    ##                        1                        3                        1 
+    ##                        4                        5                        3 
     ##             Burkina Faso                  Burundi                 Cambodia 
-    ##                        0                        4                        0 
+    ##                        0                        6                        0 
     ##                 Cameroon Central African Republic                     Chad 
-    ##                        1                        4                        7 
+    ##                        2                        7                        9 
     ##                    Chile                    China                 Colombia 
-    ##                        1                        6                        1 
+    ##                        3                        9                        1 
     ##                  Comoros               Costa Rica                 Djibouti 
-    ##                        8                        1                        7 
+    ##                       12                        3                       10 
     ##       Dominican Republic                  Ecuador              El Salvador 
-    ##                        0                        0                        0 
+    ##                        0                        1                        2 
     ##                  Eritrea                 Ethiopia                     Fiji 
-    ##                        8                        4                        4 
+    ##                       11                        5                        7 
     ##                    Gabon                  Georgia                    Ghana 
-    ##                        7                        0                        1 
+    ##                        8                        0                        1 
     ##                Guatemala                   Guinea            Guinea-Bissau 
-    ##                        1                        5                       10 
+    ##                        3                        7                       13 
     ##                   Guyana                    Haiti                 Honduras 
-    ##                        1                        4                        1 
+    ##                        3                        6                        1 
     ##                    India                Indonesia                     Iraq 
-    ##                        0                        0                        8 
+    ##                        1                        0                       11 
     ##                  Jamaica                   Jordan               Kazakhstan 
-    ##                        1                        1                        0 
-    ##                    Kenya                   Kuwait                  Lebanon 
     ##                        3                        1                        0 
+    ##                    Kenya                   Kuwait                  Lebanon 
+    ##                        4                        3                        2 
     ##                  Lesotho                  Liberia                    Libya 
-    ##                        4                        1                        8 
+    ##                        5                        2                       13 
     ##               Madagascar                   Malawi                 Malaysia 
-    ##                        3                        1                        1 
+    ##                        4                        3                        3 
     ##                     Mali               Mauritania                   Mexico 
-    ##                        1                        4                        0 
+    ##                        1                        7                        2 
     ##                 Mongolia               Montenegro                  Morocco 
-    ##                        0                        5                        0 
+    ##                        0                        6                        1 
     ##               Mozambique                  Myanmar                  Namibia 
-    ##                        1                        8                        1 
+    ##                        2                       13                        2 
     ##                    Nepal                Nicaragua                    Niger 
-    ##                        0                        2                        1 
+    ##                        1                        3                        2 
     ##                  Nigeria                     Oman                 Pakistan 
-    ##                        6                        3                        0 
+    ##                        8                        6                        1 
     ##                   Panama         Papua New Guinea                     Peru 
-    ##                        1                        7                        0 
+    ##                        3                       12                        0 
     ##              Philippines                  Romania                   Rwanda 
-    ##                        0                        1                        1 
+    ##                        0                        3                        3 
     ##             Saudi Arabia                  Senegal                   Serbia 
-    ##                        1                        4                        3 
+    ##                        3                        4                        3 
     ##             Sierra Leone                  Somalia             South Africa 
-    ##                        1                       12                        0 
+    ##                        2                       14                        1 
     ##                Sri Lanka                    Sudan                 Suriname 
-    ##                        0                        2                        5 
+    ##                        2                        5                        9 
     ##                Swaziland     Syrian Arab Republic               Tajikistan 
-    ##                        4                        0                        1 
+    ##                        6                        1                        1 
     ##                 Thailand              Timor-Leste                     Togo 
-    ##                        0                        4                        1 
+    ##                        2                        7                        1 
     ##      Trinidad and Tobago                  Tunisia                   Turkey 
-    ##                        0                        3                        0 
+    ##                        0                        5                        1 
     ##                   Uganda                  Ukraine                  Uruguay 
-    ##                        3                        0                        1 
-    ##               Uzbekistan                   Zambia                 Zimbabwe 
-    ##                        7                        1                        3
+    ##                        3                        0                        3 
+    ##               Uzbekistan 
+    ##                       10 
+    ##  [ reached getOption("max.print") -- omitted 2 entries ]
 
 ``` {.r}
 # create a version which includes only those countries that have all data
@@ -573,11 +606,11 @@ kable(df_complete[1:5,2:5])
 
 ||maternal\_mortality\_ratio|adolescent\_fertility\_rate\_gii|seats\_parlim\_female\_gii|secondary\_education\_female|
 |:--|-------------------------:|-------------------------------:|-------------------------:|---------------------------:|
-|Algeria|97|6.1|25.6|20.9|
-|Armenia|30|33.2|10.7|94.1|
 |Azerbaijan|43|31.4|16.0|90.0|
 |Bangladesh|240|68.2|19.7|30.8|
 |Burkina Faso|300|117.4|15.3|0.9|
+|Cambodia|250|32.9|18.1|11.6|
+|Dominican Republic|150|103.6|19.1|43.3|
 
 ``` {.r}
 kable(df_complete[1:5,6:10])
@@ -585,11 +618,11 @@ kable(df_complete[1:5,6:10])
 
 ||secondary\_education\_male|labor\_participation\_female\_gii|labor\_participation\_male\_gii|ifpri\_hunger\_index|ifpri\_under5\_mortality|
 |:--|-------------------------:|--------------------------------:|------------------------------:|-------------------:|-----------------------:|
-|Algeria|27.3|15.0|71.9|5.0|3.0|
-|Armenia|94.8|49.4|70.2|5.0|1.8|
 |Azerbaijan|95.7|61.6|68.5|5.0|4.5|
 |Bangladesh|39.3|57.2|84.3|19.4|4.6|
 |Burkina Faso|3.2|77.5|90.4|22.2|14.6|
+|Cambodia|20.6|79.2|86.7|16.8|4.3|
+|Dominican Republic|41.7|51.0|78.6|7.0|2.5|
 
 ``` {.r}
 kable(df_complete[1:5,11:14])
@@ -597,11 +630,11 @@ kable(df_complete[1:5,11:14])
 
 ||ifpri\_undernourishment|ifpri\_under5\_underweight|mean\_stunting\_male|mean\_stunting\_female|
 |:--|----------------------:|-------------------------:|-------------------:|---------------------:|
-|Algeria|3.7|5.7|22.23|19.57|
-|Armenia|3.0|5.3|19.57|18.10|
 |Azerbaijan|1.5|3.3|26.45|24.35|
 |Bangladesh|16.8|36.8|49.29|48.32|
 |Burkina Faso|25.9|26.2|41.45|36.27|
+|Cambodia|17.1|29.0|44.85|41.85|
+|Dominican Republic|15.4|3.1|11.27|8.50|
 
 Standardization
 ---------------
@@ -961,7 +994,7 @@ sessionInfo()
     ## other attached packages:
     ##  [1] ggplot2_1.0.0        gplots_2.14.2        bpca_1.2-2          
     ##  [4] rgl_0.94.1131        scatterplot3d_0.3-35 RColorBrewer_1.0-5  
-    ##  [7] dplyr_0.2            knitr_1.6            rmarkdown_0.3.3     
+    ##  [7] dplyr_0.2            knitr_1.6.5          rmarkdown_0.3.3     
     ## [10] knitrBootstrap_1.0.0 setwidth_1.0-3       colorout_1.0-3      
     ## [13] vimcom_1.0-0        
     ## 
@@ -971,7 +1004,7 @@ sessionInfo()
     ##  [7] formatR_1.0        gdata_2.13.3       grid_3.1.1        
     ## [10] gtable_0.1.2       gtools_3.4.1       htmltools_0.2.6   
     ## [13] KernSmooth_2.23-12 labeling_0.3       magrittr_1.0.1    
-    ## [16] markdown_0.7.4     MASS_7.3-34        mime_0.1.2        
+    ## [16] markdown_0.7.4     MASS_7.3-33        mime_0.1.2        
     ## [19] munsell_0.4.2      parallel_3.1.1     plyr_1.8.1        
     ## [22] proto_0.3-10       Rcpp_0.11.2        reshape2_1.4      
     ## [25] scales_0.2.4       stringr_0.6.2      tools_3.1.1       
